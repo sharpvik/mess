@@ -12,4 +12,3 @@ func init() {
 		log.Fatal("failed to load env")
 	}
 }
-

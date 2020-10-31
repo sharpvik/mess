@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func MustInit() (fs http.Handler) {
+func MustInit() http.Handler {
 	return http.StripPrefix("/pub/",
 		http.FileServer(http.Dir(config.Path.Public)))
 }

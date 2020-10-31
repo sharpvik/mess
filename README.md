@@ -1,2 +1,4 @@
 # mess
-Simple and beautiful chat web app
+
+Simple and beautiful chat web app.
+

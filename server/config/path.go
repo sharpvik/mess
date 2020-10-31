@@ -7,7 +7,7 @@ import (
 )
 
 var Path struct {
-	Public string
+	Public string `json:"public"`
 }
 
 func init() {
@@ -22,4 +22,6 @@ func init() {
 	if err != nil {
 		log.Fatal("failed to read path")
 	}
+
+	log.Print(Path)
 }

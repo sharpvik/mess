@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	_ "github.com/lib/pq"
+	"github.com/sharpvik/mess/api"
 	"github.com/sharpvik/mess/config"
 	"github.com/sharpvik/mess/static"
 	"log"
@@ -11,8 +12,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/sharpvik/mess/db"
 )
 
 func main() {
@@ -29,11 +28,9 @@ func main() {
 
 	// Channels for graceful shutdown.
 	done := make(chan bool, 1)
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	// Spawn graceful shutdown handler thread.
-	go grace(server, &quit, &done)
+	go grace(server, &done)
 
 	log.Printf("serving at port %s", config.Server.Port)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -45,8 +42,11 @@ func main() {
 }
 
 // Graceful shutdown handler.
-func grace(server *http.Server, quit *chan os.Signal, done *chan bool) {
-	<-*quit
+func grace(server *http.Server, done *chan bool) {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	<-quit
 	log.Print("stopping server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

@@ -3,7 +3,7 @@ package chat
 import "github.com/jmoiron/sqlx"
 
 type Chat struct {
-	ID int
+	ID   int
 	Name string
 }
 

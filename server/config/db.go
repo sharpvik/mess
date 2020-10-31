@@ -6,15 +6,15 @@ import (
 )
 
 var DB struct {
-	Host string
-	Port string
-	User string
+	Host     string
+	Port     string
+	User     string
 	Password string
-	Name string
+	Name     string
 }
 
 func init() {
-	log.Print("config db")
+	log.Print("config api")
 	DB.Host = os.Getenv("DB_HOST")
 	DB.Port = os.Getenv("DB_PORT")
 	DB.User = os.Getenv("DB_USER")
