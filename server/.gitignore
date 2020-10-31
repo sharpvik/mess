@@ -1,0 +1,7 @@
+# Environment files.
+.idea
+.env
+path.json
+
+# Executable files.
+mess
