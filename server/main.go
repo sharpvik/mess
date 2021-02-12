@@ -1,62 +1,38 @@
 package main
 
 import (
-	"context"
-	_ "github.com/lib/pq"
-	"github.com/sharpvik/mess/api"
-	"github.com/sharpvik/mess/config"
-	"github.com/sharpvik/mess/static"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+	"github.com/joho/godotenv"
+	"github.com/sharpvik/log-go"
+
+	"github.com/sharpvik/mess/server/configs"
+	"github.com/sharpvik/mess/server/database"
+	"github.com/sharpvik/mess/server/server"
 )
 
-func main() {
-	db := dbi.MustInit()
-	defer db.Close()
-
-	server := &http.Server{
-		Addr:         ":" + config.Server.Port,
-		Handler:      static.MustInit(),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  15 * time.Second,
+// init simply loads environment from the .env file.
+func init() {
+	log.Debug("reading .env ...")
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("failed to read .env")
 	}
-
-	// Channels for graceful shutdown.
-	done := make(chan bool, 1)
-
-	// Spawn graceful shutdown handler thread.
-	go grace(server, &done)
-
-	log.Printf("serving at port %s", config.Server.Port)
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
-
-	<-done
-	log.Print("server stopped")
 }
 
-// Graceful shutdown handler.
-func grace(server *http.Server, done *chan bool) {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+// mustInit is responsible for the primary and the most essential initialization
+// code that has to run properly.
+func mustInit() (config configs.Config, db *database.Database) {
+	config = configs.MustInit()
+	db = database.MustInit(config.Database)
+	return
+}
 
-	<-quit
-	log.Print("stopping server...")
+func main() {
+	config, _ := mustInit()
+	log.Debug("init successfull")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	serv := server.NewServer(config.Server)
+	done := make(chan bool, 1)
+	go serv.ServeWithGrace(done)
 
-	server.SetKeepAlivesEnabled(false)
-
-	if err := server.Shutdown(ctx); err != nil {
-		log.Fatal("graceful shutdown failed")
-	}
-
-	close(*done)
+	<-done
+	log.Debug("server stopped")
 }

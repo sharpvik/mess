@@ -1,7 +1,9 @@
 # Environment files.
 .idea
 .env
-path.json
 
 # Executable files.
 mess
+
+# Public folder.
+public
