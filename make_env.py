@@ -17,5 +17,4 @@ CLIENT_DIR=client/dist
 
 
 if __name__ == '__main__':
-    with open('.env', 'w') as env:
-        env.write(TEMPLATE)
+    print(TEMPLATE)
