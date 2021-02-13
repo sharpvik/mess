@@ -14,7 +14,7 @@ type Server struct {
 func mustInitServer() Server {
 	log.Debug("config server")
 	return Server{
-		PublicDir: http.Dir(mustGet("PUBLIC_DIR")),
+		PublicDir: http.Dir(mustGet("CLIENT_DIR")),
 		DevMode:   parseFlags(),
 	}
 }

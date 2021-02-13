@@ -2,17 +2,10 @@
 
 ## Setup
 
-Create the `.env` file like this:
+Create the `.env` file.
 
 ```bash
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_USER=mess
-POSTGRES_PASSWORD=password123
-POSTGRES_DB=mess
-POSTGRES_MIGRATIONS=migrations
-
-PUBLIC_DIR=/path/to/mess/client/dist
+python make_env.py
 ```
 
 ## Run
