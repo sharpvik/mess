@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq" // the DB driver
 	"github.com/sharpvik/log-go"
 
-	"github.com/sharpvik/mess/server/configs"
+	"github.com/sharpvik/mess/configs"
 )
 
 // Database represents the generic database interface.

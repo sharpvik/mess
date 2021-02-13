@@ -10,7 +10,7 @@ import (
 
 	"github.com/sharpvik/log-go"
 
-	"github.com/sharpvik/mess/server/configs"
+	"github.com/sharpvik/mess/configs"
 )
 
 // Server is a wrapper around http.Server that allows us to define our own

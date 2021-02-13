@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/sharpvik/log-go"
+
+	"github.com/sharpvik/mess/env"
 )
 
 type Server struct {
@@ -14,7 +16,7 @@ type Server struct {
 func mustInitServer() Server {
 	log.Debug("config server")
 	return Server{
-		PublicDir: http.Dir(mustGet("CLIENT_DIR")),
+		PublicDir: http.Dir(env.MustGet("CLIENT_DIR")),
 		DevMode:   parseFlags(),
 	}
 }

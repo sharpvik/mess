@@ -1,6 +1,10 @@
 package configs
 
-import "github.com/sharpvik/log-go"
+import (
+	"github.com/sharpvik/log-go"
+
+	"github.com/sharpvik/mess/env"
+)
 
 type Database struct {
 	Host       string
@@ -14,11 +18,11 @@ type Database struct {
 func mustInitDB() Database {
 	log.Debug("config database")
 	return Database{
-		Host:       mustGet("POSTGRES_HOST"),
-		Port:       mustGet("POSTGRES_PORT"),
-		User:       mustGet("POSTGRES_USER"),
-		Password:   mustGet("POSTGRES_PASSWORD"),
-		Name:       mustGet("POSTGRES_DB"),
-		Migrations: mustGet("POSTGRES_MIGRATIONS"),
+		Host:       env.MustGet("POSTGRES_HOST"),
+		Port:       env.MustGet("POSTGRES_PORT"),
+		User:       env.MustGet("POSTGRES_USER"),
+		Password:   env.MustGet("POSTGRES_PASSWORD"),
+		Name:       env.MustGet("POSTGRES_DB"),
+		Migrations: env.MustGet("POSTGRES_MIGRATIONS"),
 	}
 }

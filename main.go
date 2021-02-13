@@ -4,9 +4,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sharpvik/log-go"
 
-	"github.com/sharpvik/mess/server/configs"
-	"github.com/sharpvik/mess/server/database"
-	"github.com/sharpvik/mess/server/server"
+	"github.com/sharpvik/mess/configs"
+	"github.com/sharpvik/mess/database"
+	"github.com/sharpvik/mess/server"
 )
 
 // init simply loads environment from the .env file.
