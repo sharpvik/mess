@@ -1,0 +1,17 @@
+header {
+  display: flex;
+  justify-content: space-between;
+  background-color: #263238;
+  color: white;
+  padding: 0 20px;
+}
+
+header h1 {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 60px;
+}
+
+header pre {
+  line-height: 60px;
+}
