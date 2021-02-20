@@ -1,10 +1,12 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // the DB driver
@@ -27,9 +29,8 @@ func MustInit(config configs.Database) (db *Database) {
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		config.Host, config.Port, config.User, config.Password, config.Name)
 
-	dbi, err := sqlx.Connect("postgres", details)
+	dbi, err := connect(details, 10)
 	if err != nil {
-		log.Error(err)
 		log.Fatal("failed to connect to the database")
 	}
 
@@ -40,6 +41,21 @@ func MustInit(config configs.Database) (db *Database) {
 
 	db.up()
 
+	return
+}
+
+func connect(details string, tries int) (dbi *sqlx.DB, err error) {
+	if tries < 1 {
+		err = errors.New("database connection attempts limit reached")
+		return
+	}
+	dbi, err = sqlx.Connect("postgres", details)
+	if err != nil {
+		log.Error(err)
+		log.Debug("retrying in a second ...")
+		time.Sleep(1 * time.Second)
+		return connect(details, tries-1)
+	}
 	return
 }
 

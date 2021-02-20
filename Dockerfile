@@ -1,12 +1,11 @@
 # Build client.
-FROM node:latest AS client_builder
+FROM codesimple/elm:0.19 AS client_builder
 RUN mkdir /app
 WORKDIR /app
 # Copy client from this folder to WORKDIR.
 COPY ./client /app
 # Build the client.
-RUN npm install
-RUN npm run build   # => /app/dist
+RUN elm make src/Main.elm --output dist/js/app.js   # => /app/dist
 
 
 
