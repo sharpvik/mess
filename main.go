@@ -26,10 +26,10 @@ func mustInit() (config configs.Config, db *database.Database) {
 }
 
 func main() {
-	config, _ := mustInit()
+	config, db := mustInit()
 	log.Debug("init successfull")
 
-	serv := server.NewServer(config.Server)
+	serv := server.NewServer(config.Server, db.Conn)
 	done := make(chan bool, 1)
 	go serv.ServeWithGrace(done)
 

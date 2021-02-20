@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/sharpvik/log-go"
 
 	"github.com/sharpvik/mess/configs"
@@ -22,10 +23,10 @@ type Server struct {
 }
 
 // NewServer returns appropriate server based on the mode and configs.
-func NewServer(config configs.Server) (s *Server) {
+func NewServer(config configs.Server, db *sqlx.DB) (s *Server) {
 	s = NewBasicServer()
 	s.setMode(config.DevMode)
-	s.server.Handler = newServerHandler(config.PublicDir)
+	s.server.Handler = newServerHandler(config.PublicDir, db)
 	return
 }
 

@@ -40,7 +40,6 @@ func MustInit(config configs.Database) (db *Database) {
 	}
 
 	db.up()
-
 	return
 }
 
