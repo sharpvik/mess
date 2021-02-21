@@ -25,12 +25,14 @@ func (db *database) signup() mux.View {
 		err := user.HashPassword(security.SaltedHash)
 		if err != nil {
 			log.Errorf("failed to add user %s: %s", user.Handle, err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		err = db.users.Add(user)
 		if err != nil {
 			log.Errorf("failed to add user %s: %s", user.Handle, err)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 

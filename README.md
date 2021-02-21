@@ -2,6 +2,8 @@
 
 Simple and beautiful chat web app.
 
+![Signup page](doc/media/signup.png)
+
 ## Clone & Deploy!
 
 I made it very simple to setup and use. You shouldn't face any problems at all.

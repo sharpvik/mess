@@ -5,9 +5,20 @@ import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import MainTypes exposing (..)
+import Http
+import MainTypes
+    exposing
+        ( Model
+        , Msg(..)
+        , SignupFormField(..)
+        , UserData
+        , userDataWithHandle
+        , userDataWithName
+        , userDataWithPassword
+        )
 import Mux
 import Routes exposing (Route(..), parse)
+import String exposing (fromInt)
 import Url exposing (Url)
 
 
@@ -33,7 +44,7 @@ main =
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
-    ( Model (Routes.parse url) key
+    ( Model (Routes.parse url) key (UserData "" "" "") Nothing
     , Cmd.none
     )
 
@@ -62,7 +73,49 @@ update msg model =
                     , Nav.load href
                     )
 
-        Nop ->
+        SignupFormKeyDown field str ->
+            let
+                _ =
+                    Debug.log "user data" model.userData
+            in
+            case field of
+                Handle ->
+                    ( { model | userData = userDataWithHandle model.userData str }
+                    , Cmd.none
+                    )
+
+                Name ->
+                    ( { model | userData = userDataWithName model.userData str }
+                    , Cmd.none
+                    )
+
+                Password ->
+                    ( { model | userData = userDataWithPassword model.userData str }
+                    , Cmd.none
+                    )
+
+        SignupFormSubmit jsonData ->
+            ( model
+            , Http.post
+                { url = "/api/signup"
+                , body = Http.jsonBody jsonData
+                , expect = Http.expectString UserSignupResult
+                }
+            )
+
+        UserSignupResult result ->
+            case result of
+                Ok _ ->
+                    ( { model | userSignupResult = Just True }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( { model | userSignupResult = Just False }
+                    , Cmd.none
+                    )
+
+        Nop _ ->
             ( model
             , Cmd.none
             )
@@ -86,5 +139,5 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     { title = "Mess"
-    , body = Mux.mux model.route
+    , body = Mux.mux model
     }

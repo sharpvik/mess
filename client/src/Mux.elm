@@ -8,14 +8,14 @@ import MainTypes exposing (..)
 import Routes exposing (Route(..))
 
 
-mux : Route -> List (Html Msg)
-mux route =
-    case route of
+mux : Model -> List (Html Msg)
+mux model =
+    case model.route of
         Root ->
             root
 
         Signup ->
-            signup
+            signup model
 
 
 root : List (Html Msg)
@@ -35,35 +35,52 @@ root =
     ]
 
 
-signup : List (Html Msg)
-signup =
-    [ topbar "Sign Up"
-    , Html.form [ class "creds-form", action "/api/signup", method "POST" ]
-        [ input
-            [ type_ "text"
-            , name "handle"
-            , placeholder "Username"
-            , required True
+signup : Model -> List (Html Msg)
+signup model =
+    case model.userSignupResult of
+        Nothing ->
+            [ topbar "Sign Up"
+            , Html.form
+                [ class "creds-form"
+                , onSubmit (SignupFormSubmit (jsonEncodeUserData model.userData))
+                ]
+                [ input
+                    [ type_ "text"
+                    , name "handle"
+                    , placeholder "Username"
+                    , required True
+                    , value model.userData.handle
+                    , onInput (SignupFormKeyDown Handle)
+                    ]
+                    []
+                , input
+                    [ type_ "text"
+                    , name "name"
+                    , placeholder "Your Name"
+                    , required True
+                    , value model.userData.name
+                    , onInput (SignupFormKeyDown Name)
+                    ]
+                    []
+                , input
+                    [ type_ "password"
+                    , name "password"
+                    , placeholder "Password"
+                    , required True
+                    , value model.userData.password
+                    , onInput (SignupFormKeyDown Password)
+                    ]
+                    []
+                , button
+                    [ class "button"
+                    , type_ "submit"
+                    ]
+                    [ text "Submit" ]
+                ]
             ]
-            []
-        , input
-            [ type_ "text"
-            , name "name"
-            , placeholder "Your Name"
-            , required True
-            ]
-            []
-        , input
-            [ type_ "password"
-            , name "password"
-            , placeholder "Password"
-            , required True
-            ]
-            []
-        , button
-            [ class "button"
-            , type_ "submit"
-            ]
-            [ text "Submit" ]
-        ]
-    ]
+
+        Just True ->
+            [ text "Success" ]
+
+        Just False ->
+            [ text "Failure" ]

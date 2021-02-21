@@ -9,5 +9,5 @@ topbar : String -> Html Msg
 topbar head =
     header [ class "topbar" ]
         [ h1 [] [ text head ]
-        , a [ href "/signup" ] [ text "Register" ]
+        , a [ href "/@signup" ] [ text "Register" ]
         ]

@@ -16,8 +16,8 @@ type Route
 urlParser : UrlParser a
 urlParser =
     oneOf
-        [ map Root (s "")
-        , map Signup (s "signup")
+        [ map Root (s "@")
+        , map Signup (s "@signup")
         ]
 
 
