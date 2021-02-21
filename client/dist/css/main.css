@@ -10,9 +10,9 @@
   display: flex;
   justify-content: space-between;
   padding: 0 20px;
-  box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 4px 5px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0px 4px 5px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0px 4px 5px 0px rgba(0, 0, 0, 0.4);
 }
 
 .topbar * {
@@ -41,8 +41,8 @@
   padding: 10px 15px;
   color: white;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
+  border-radius: 5px;
   box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.4);
   -moz-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.4);
@@ -74,6 +74,35 @@
 }
 .passage p {
   color: #263238;
+}
+
+.creds-form {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  height: 200px;
+  max-width: 300px;
+  margin: 25px auto;
+  padding: 20px;
+  text-align: center;
+  border-radius: 5px;
+  box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+  justify-content: space-around;
+}
+.creds-form input {
+  display: block;
+  width: 90%;
+  border: none;
+  border-radius: 0;
+  border-bottom: 2px solid #CCCCCC;
+  padding: 7px 10px;
+  transition: border 0.3s;
+}
+.creds-form input:focus {
+  border-bottom: 2px solid #263238;
+  transition: border 0.3s;
 }
 
 /*# sourceMappingURL=main.css.map */

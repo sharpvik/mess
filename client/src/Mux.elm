@@ -38,7 +38,7 @@ root =
 signup : List (Html Msg)
 signup =
     [ topbar "Sign Up"
-    , Html.form [ class "creds-form" ]
+    , Html.form [ class "creds-form", action "/api/signup", method "POST" ]
         [ input
             [ type_ "text"
             , name "handle"
@@ -60,5 +60,10 @@ signup =
             , required True
             ]
             []
+        , button
+            [ class "button"
+            , type_ "submit"
+            ]
+            [ text "Submit" ]
         ]
     ]

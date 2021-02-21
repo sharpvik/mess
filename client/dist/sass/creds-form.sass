@@ -1,0 +1,28 @@
+@import colors
+@import props
+
+.creds-form
+    display: flex
+    flex-direction: column
+    width: 90%
+    height: 200px
+    max-width: 300px
+    margin: 25px auto
+    padding: 20px
+    text-align: center
+    +round-corners()
+    +elevation(3px)
+    justify-content: space-around
+
+    & input
+        display: block
+        width: 90%
+        border: none
+        border-radius: 0
+        border-bottom: 2px solid $light-grey
+        padding: 7px 10px
+        transition: border 0.3s
+
+        &:focus
+            border-bottom: 2px solid $dark-grey
+            transition: border 0.3s
