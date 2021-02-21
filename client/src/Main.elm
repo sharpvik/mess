@@ -1,4 +1,4 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Browser exposing (Document, UrlRequest(..))
 import Browser.Navigation as Nav
@@ -70,12 +70,7 @@ update msg model =
 
 
 -- PORTS
-
-
-port info : String -> Cmd msg
-
-
-
+-- port info : String -> Cmd msg
 -- SUBSCRIPTIONS
 
 
