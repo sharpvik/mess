@@ -18,7 +18,6 @@ import MainTypes
         )
 import Mux
 import Routes exposing (Route(..), parse)
-import String exposing (fromInt)
 import Url exposing (Url)
 
 
@@ -110,11 +109,6 @@ update msg model =
                     ( { model | userSignupResult = Just False }
                     , Cmd.none
                     )
-
-        Nop _ ->
-            ( model
-            , Cmd.none
-            )
 
 
 

@@ -58,5 +58,4 @@ type Msg
     | LinkChanged Url
     | SignupFormKeyDown SignupFormField String
     | SignupFormSubmit Json.Encode.Value
-    | UserSignupResult (Result Http.Error String) -- True is success, False is failure
-    | Nop Json.Encode.Value
+    | UserSignupResult (Result Http.Error String)
