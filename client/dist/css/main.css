@@ -15,14 +15,21 @@
   -moz-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
 }
 
-.topbar h1 {
-  font-size: 22px;
-  font-weight: 500;
+.topbar * {
   line-height: 60px;
 }
 
-.topbar pre {
-  line-height: 60px;
+.topbar h1 {
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.topbar a {
+  color: #263238;
+  text-decoration: none;
+}
+.topbar a:hover {
+  text-decoration: underline;
 }
 
 .button {

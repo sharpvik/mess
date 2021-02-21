@@ -1,20 +1,26 @@
-module Main exposing (..)
+port module Main exposing (..)
 
-import Browser
+import Browser exposing (Document, UrlRequest(..))
+import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Task
-import Time
+import Html.Events exposing (..)
+import MainTypes exposing (..)
+import Mux
+import Routes exposing (Route(..), parse)
+import Url exposing (Url)
 
 
 
 -- MAIN
 
 
-main : Program Flags Model Msg
+main : Program () Model Msg
 main =
-    Browser.document
+    Browser.application
         { init = init
+        , onUrlChange = LinkChanged
+        , onUrlRequest = LinkClicked
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -22,23 +28,13 @@ main =
 
 
 
--- MODEL
+-- INIT
 
 
-type alias Flags =
-    Int
-
-
-type alias Model =
-    { zone : Time.Zone
-    , time : Time.Posix
-    }
-
-
-init : Flags -> ( Model, Cmd Msg )
-init current =
-    ( Model Time.utc (Time.millisToPosix current)
-    , Task.perform AdjustTimeZone Time.here
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init _ url key =
+    ( Model (Routes.parse url) key
+    , Cmd.none
     )
 
 
@@ -46,23 +42,37 @@ init current =
 -- UPDATE
 
 
-type Msg
-    = Tick Time.Posix
-    | AdjustTimeZone Time.Zone
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick newTime ->
-            ( { model | time = newTime }
+        LinkChanged url ->
+            ( { model | route = parse url }
             , Cmd.none
             )
 
-        AdjustTimeZone newZone ->
-            ( { model | zone = newZone }
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Internal url ->
+                    ( model
+                    , Nav.pushUrl model.key (Url.toString url)
+                    )
+
+                External href ->
+                    ( model
+                    , Nav.load href
+                    )
+
+        Nop ->
+            ( model
             , Cmd.none
             )
+
+
+
+-- PORTS
+
+
+port info : String -> Cmd msg
 
 
 
@@ -71,63 +81,15 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Time.every 1000 Tick
+    Sub.none
 
 
 
 -- VIEW
 
 
-view : Model -> Browser.Document Msg
+view : Model -> Document Msg
 view model =
     { title = "Mess"
-    , body = body model
+    , body = Mux.mux model.route
     }
-
-
-body : Model -> List (Html Msg)
-body model =
-    [ header [ class "topbar" ]
-        [ h1 [] [ text "Mess" ]
-        , time model
-        ]
-    , section [ class "passage" ]
-        [ h1 [] [ text "Coming soon..." ]
-        , p []
-            [ text "Mess chat app is currently under construction. We're working hard to create a new way of building local communities using technology and internet."
-            ]
-        , a [ class "button", href "https://github.com/sharpvik/mess" ] [ text "Contribute" ]
-        ]
-    ]
-
-
-
--- UTIL
-
-
-time : Model -> Html Msg
-time model =
-    let
-        hour =
-            timeFormat (Time.toHour model.zone model.time)
-
-        minute =
-            timeFormat (Time.toMinute model.zone model.time)
-
-        second =
-            timeFormat (Time.toSecond model.zone model.time)
-    in
-    pre [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
-
-
-timeFormat : Int -> String
-timeFormat i =
-    let
-        s =
-            String.fromInt i
-    in
-    if String.length s == 1 then
-        "0" ++ s
-
-    else
-        s

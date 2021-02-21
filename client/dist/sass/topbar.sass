@@ -1,4 +1,5 @@
 @import props
+@import colors
 
 .topbar
     display: flex
@@ -6,10 +7,16 @@
     padding: 0 20px
     +elevation(3px)
 
+.topbar *
+    line-height: 60px
+
 .topbar h1
     font-size: 22px
     font-weight: 500
-    line-height: 60px
 
-.topbar pre
-    line-height: 60px
+.topbar a
+    color: $dark-grey
+    text-decoration: none
+
+    &:hover
+        text-decoration: underline
