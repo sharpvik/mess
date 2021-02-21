@@ -1,5 +1,6 @@
 module Mux exposing (mux)
 
+import Elements exposing (topbar)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -19,10 +20,7 @@ mux route =
 
 root : List (Html Msg)
 root =
-    [ header [ class "topbar" ]
-        [ h1 [] [ text "Mess" ]
-        , a [ href "/signup" ] [ text "Register" ]
-        ]
+    [ topbar "Mess"
     , section [ class "passage" ]
         [ h1 [] [ text "Coming soon..." ]
         , p []
@@ -39,4 +37,28 @@ root =
 
 signup : List (Html Msg)
 signup =
-    [ h1 [] [ text "signup page" ] ]
+    [ topbar "Sign Up"
+    , Html.form [ class "creds-form" ]
+        [ input
+            [ type_ "text"
+            , name "handle"
+            , placeholder "Username"
+            , required True
+            ]
+            []
+        , input
+            [ type_ "text"
+            , name "name"
+            , placeholder "Your Name"
+            , required True
+            ]
+            []
+        , input
+            [ type_ "password"
+            , name "password"
+            , placeholder "Password"
+            , required True
+            ]
+            []
+        ]
+    ]
