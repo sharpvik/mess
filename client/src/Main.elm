@@ -74,10 +74,6 @@ update msg model =
                     )
 
         SignupFormKeyDown field str ->
-            let
-                _ =
-                    Debug.log "user data" model.userData
-            in
             case field of
                 Handle ->
                     ( { model | userData = userDataWithHandle model.userData str }
