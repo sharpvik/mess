@@ -87,16 +87,16 @@ view model =
 
 body : Model -> List (Html Msg)
 body model =
-    [ header []
+    [ header [ class "topbar" ]
         [ h1 [] [ text "Mess" ]
         , time model
         ]
-    , section [ class "warning" ]
+    , section [ class "passage" ]
         [ h1 [] [ text "Coming soon..." ]
         , p []
             [ text "Mess chat app is currently under construction. We're working hard to create a new way of building local communities using technology and internet."
             ]
-        , a [ href "https://github.com/sharpvik/mess" ] [ text "Contribute" ]
+        , a [ class "button", href "https://github.com/sharpvik/mess" ] [ text "Contribute" ]
         ]
     ]
 

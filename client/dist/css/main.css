@@ -1,0 +1,72 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  outline: none;
+  font-family: "Roboto", Arial, Helvetica, sans-serif;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+}
+
+.topbar h1 {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 60px;
+}
+
+.topbar pre {
+  line-height: 60px;
+}
+
+.button {
+  background-color: #2196F3;
+  display: inline-block;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 10px 15px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s;
+}
+.button:hover {
+  box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.4);
+  background-color: #42A5F5;
+  transition: all 0.2s;
+}
+.button:active {
+  box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.4);
+  background-color: #1976D2;
+  transition: all 0.2s;
+}
+
+.passage {
+  width: 90%;
+  max-width: 400px;
+  margin: 25px auto;
+  text-align: center;
+}
+.passage * {
+  margin: 15px 0;
+}
+.passage p {
+  color: #37474F;
+}
+
+/*# sourceMappingURL=main.css.map */
