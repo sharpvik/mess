@@ -1,9 +1,21 @@
+# Build styles.
+FROM ubuntudesign/sass AS styles_builder
+RUN mkdir /cli
+WORKDIR /cli
+COPY ./client /cli
+RUN mkdir /cli/dist/css
+RUN sass sass/main.sass:dist/css/main.css
+
+
+
 # Build client.
 FROM codesimple/elm:0.19 AS client_builder
 RUN mkdir /app
 WORKDIR /app
 # Copy client from this folder to WORKDIR.
 COPY ./client /app
+COPY --from=styles_builder /cli/dist /app/dist
+RUN mkdir /app/dist/js
 # Build the client.
 RUN elm make src/Main.elm --output dist/js/app.js   # => /app/dist
 
