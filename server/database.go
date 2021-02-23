@@ -7,6 +7,7 @@ import (
 	"github.com/sharpvik/log-go"
 	"github.com/sharpvik/mux"
 
+	"github.com/sharpvik/mess/auth"
 	"github.com/sharpvik/mess/database/users"
 	"github.com/sharpvik/mess/security"
 )
@@ -37,5 +38,36 @@ func (db *database) signup() mux.View {
 		}
 
 		log.Infof("user %s successfully added", user.Handle)
+	}
+}
+
+func (db *database) login() mux.View {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := new(users.User)
+		json.NewDecoder(r.Body).Decode(user)
+
+		log.Infof("processing login request from %s ...", user.Handle)
+		hash, salt, err := db.users.GetHashAndSalt(user)
+		if err != nil {
+			log.Errorf("failed to access user's password info")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if !security.CheckPasswordHash(user.Password, hash, salt) {
+			log.Error("invalid password")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		token, err := auth.NewSignedJWTTokenWithClaimsForUser(user.Handle)
+		if err != nil {
+			log.Errorf("failed to create JWT token: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, token.WrapInCookie())
+		log.Info("login request approved")
 	}
 }

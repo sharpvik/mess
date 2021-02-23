@@ -13,7 +13,7 @@ func TestParseToken(t *testing.T) {
 
 	assert.NoErrorf(t, err, "failed to create the token: %s", err)
 
-	token, err := ParseToken(signed)
+	token, err := signed.ParseToken()
 
 	assert.NoErrorf(t, err, "failed to parse the token: %s", err)
 	assert.NoError(t, token.Claims.Valid(), "claims should be valid")

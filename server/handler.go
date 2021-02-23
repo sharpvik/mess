@@ -29,6 +29,10 @@ func api(r *mux.Router, conn *sqlx.DB) {
 		Path("/signup").
 		Methods(http.MethodPost).
 		HandleFunc(db.signup())
+	r.Subrouter().
+		Path("/login").
+		Methods(http.MethodPost).
+		HandleFunc(db.login())
 }
 
 func index(publicDir string) mux.View {

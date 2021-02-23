@@ -1,12 +1,15 @@
 package auth
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-func NewSignedJWTTokenWithClaimsForUser(handle string) (string, error) {
+type SignedToken string
+
+func NewSignedJWTTokenWithClaimsForUser(handle string) (SignedToken, error) {
 	claims := &Claims{
 		UserHandle: handle,
 		StdClaims: jwt.StandardClaims{
@@ -16,9 +19,19 @@ func NewSignedJWTTokenWithClaimsForUser(handle string) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signature := mustGetSigningKey()
-	return token.SignedString(signature)
+	signed, err := token.SignedString(signature)
+	return SignedToken(signed), err
 }
 
-func ParseToken(signed string) (*jwt.Token, error) {
-	return jwt.ParseWithClaims(signed, &Claims{}, keyFunc)
+func (st SignedToken) WrapInCookie() *http.Cookie {
+	return &http.Cookie{
+		Name:     "jwt",
+		Value:    string(st),
+		Domain:   "chatic.live",
+		HttpOnly: true,
+	}
+}
+
+func (st SignedToken) ParseToken() (*jwt.Token, error) {
+	return jwt.ParseWithClaims(string(st), &Claims{}, keyFunc)
 }
