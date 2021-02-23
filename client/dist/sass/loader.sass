@@ -1,0 +1,28 @@
+@import 'colors'
+
+.loader
+    height: 100vh
+    display: flex
+    flex-direction: column
+    justify-content: center
+
+    .median
+        text-align: center
+
+    @keyframes bounce
+        0%
+            transform: scale(1)
+
+        50%
+            transform: scale(2)
+
+        100%
+            transform: scale(1)
+
+    #loader
+        display: inline-block
+        width: 30px
+        height: 30px
+        background-color: $accent-color
+        border-radius: 50%
+        animation: bounce 0.6s infinite

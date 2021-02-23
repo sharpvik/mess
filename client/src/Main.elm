@@ -5,19 +5,9 @@ import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Http
-import MainTypes
-    exposing
-        ( Model
-        , Msg(..)
-        , SignupFormField(..)
-        , UserData
-        , userDataWithHandle
-        , userDataWithName
-        , userDataWithPassword
-        )
-import Mux
-import Routes exposing (Route(..), parse)
+import Page.Home
+import Page.Signup
+import Route exposing (Route)
 import Url exposing (Url)
 
 
@@ -43,9 +33,68 @@ main =
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
-    ( Model (Routes.parse url) key (UserData "" "" "") Nothing
-    , Cmd.none
-    )
+    mux (Route.fromUrl url) (Redirect key)
+
+
+mux : Route -> Model -> ( Model, Cmd Msg )
+mux route model =
+    let
+        norm :
+            (subModel -> model)
+            -> (subMsg -> msg)
+            -> ( subModel, Cmd subMsg )
+            -> ( model, Cmd msg )
+        norm toModel toMsg ( subModel, cmd ) =
+            ( toModel subModel, Cmd.map toMsg cmd )
+    in
+    case route of
+        Route.Home ->
+            ( Home (toKey model), Cmd.none )
+
+        Route.Signup ->
+            norm (Signup (toKey model)) GotSignupMsg Page.Signup.init
+
+
+
+-- VIEW
+
+
+view : Model -> Document Msg
+view model =
+    let
+        norm : (msg -> a) -> Document msg -> Document a
+        norm toMsg { title, body } =
+            { title = title
+            , body = List.map (Html.map toMsg) body
+            }
+    in
+    case model of
+        Redirect _ ->
+            { title = "Redirecting..."
+            , body = [ text "Redirecting..." ]
+            }
+
+        Home _ ->
+            Page.Home.view
+
+        Signup _ signupModel ->
+            norm GotSignupMsg (Page.Signup.view signupModel)
+
+
+
+-- TYPES
+
+
+type Model
+    = Redirect Nav.Key
+    | Home Nav.Key
+    | Signup Nav.Key Page.Signup.Model
+
+
+type Msg
+    = LinkClicked UrlRequest
+    | LinkChanged Url
+    | GotSignupMsg Page.Signup.Msg
 
 
 
@@ -54,17 +103,24 @@ init _ url key =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        norm :
+            (subModel -> model)
+            -> (subMsg -> msg)
+            -> ( subModel, Cmd subMsg )
+            -> ( model, Cmd msg )
+        norm toModel toMsg ( subModel, cmd ) =
+            ( toModel subModel, Cmd.map toMsg cmd )
+    in
     case msg of
         LinkChanged url ->
-            ( { model | route = parse url }
-            , Cmd.none
-            )
+            mux (Route.fromUrl url) model
 
         LinkClicked urlRequest ->
             case urlRequest of
                 Internal url ->
                     ( model
-                    , Nav.pushUrl model.key (Url.toString url)
+                    , Nav.pushUrl (toKey model) (Url.toString url)
                     )
 
                 External href ->
@@ -72,43 +128,27 @@ update msg model =
                     , Nav.load href
                     )
 
-        SignupFormKeyDown field str ->
-            case field of
-                Handle ->
-                    ( { model | userData = userDataWithHandle model.userData str }
-                    , Cmd.none
-                    )
+        GotSignupMsg signupMsg ->
+            case model of
+                Signup key signupModel ->
+                    Page.Signup.update signupMsg signupModel
+                        |> norm (Signup key) GotSignupMsg
 
-                Name ->
-                    ( { model | userData = userDataWithName model.userData str }
-                    , Cmd.none
-                    )
+                _ ->
+                    ( model, Cmd.none )
 
-                Password ->
-                    ( { model | userData = userDataWithPassword model.userData str }
-                    , Cmd.none
-                    )
 
-        SignupFormSubmit jsonData ->
-            ( model
-            , Http.post
-                { url = "/api/signup"
-                , body = Http.jsonBody jsonData
-                , expect = Http.expectString UserSignupResult
-                }
-            )
+toKey : Model -> Nav.Key
+toKey model =
+    case model of
+        Redirect key ->
+            key
 
-        UserSignupResult result ->
-            case result of
-                Ok _ ->
-                    ( { model | userSignupResult = Just True }
-                    , Cmd.none
-                    )
+        Home key ->
+            key
 
-                Err _ ->
-                    ( { model | userSignupResult = Just False }
-                    , Cmd.none
-                    )
+        Signup key _ ->
+            key
 
 
 
@@ -120,14 +160,3 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
-
-
-
--- VIEW
-
-
-view : Model -> Document Msg
-view model =
-    { title = "Mess"
-    , body = Mux.mux model
-    }
