@@ -5,6 +5,7 @@ import Elements exposing (topbar)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Location
 
 
 view : Document msg
@@ -19,7 +20,7 @@ view =
                 ]
             , a
                 [ class "button"
-                , href "https://github.com/sharpvik/mess"
+                , href Location.repo
                 ]
                 [ text "Contribute" ]
             ]

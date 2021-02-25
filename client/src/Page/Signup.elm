@@ -7,6 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Encode as Encode
+import Location
 
 
 init : ( Model, Cmd Msg )
@@ -53,7 +54,7 @@ update msg model =
             ( SignupResult Nothing
               -- expecting response from server
             , Http.post
-                { url = "/api/signup"
+                { url = Location.apiSignup
                 , body = Http.jsonBody json
                 , expect = Http.expectString GotSignupResult
                 }
@@ -91,6 +92,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     let
+        goBackLink : Location.Dest -> String -> Html Msg
         goBackLink ref txt =
             a [ class "button", href ref ] [ text txt ]
     in
@@ -150,7 +152,7 @@ view model =
                 [ div [ class "passage" ]
                     [ h1 [] [ text "Success!" ]
                     , p [] [ text "You can go back and login now." ]
-                    , goBackLink "/@" "Go Back"
+                    , goBackLink Location.home "Go Back"
                     ]
                 ]
 
@@ -158,7 +160,7 @@ view model =
                 [ div [ class "passage" ]
                     [ h1 [] [ text "Failure..." ]
                     , p [] [ text "Please try again!" ]
-                    , goBackLink "/@signup" "Try Again"
+                    , goBackLink Location.signup "Try Again"
                     ]
                 ]
     }

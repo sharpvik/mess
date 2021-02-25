@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Browser exposing (Document, UrlRequest(..))
 import Browser.Navigation as Nav
+import Elements
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -71,7 +72,7 @@ view model =
     case model of
         Redirect _ ->
             { title = "Redirecting..."
-            , body = [ text "Redirecting..." ]
+            , body = [ Elements.loader ]
             }
 
         Home _ ->
