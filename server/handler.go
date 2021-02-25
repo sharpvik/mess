@@ -5,42 +5,35 @@ import (
 	"path"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/sharpvik/mess/database/users"
+
 	"github.com/sharpvik/mux"
 )
 
 func newServerHandler(publicDir http.Dir, db *sqlx.DB) http.Handler {
-	r := mux.New()
-	api(r.Subrouter().PathPrefix("/api"), db)
-	r.Subrouter().
+	rtr := mux.New()
+
+	rtr.Subrouter().
+		PathPrefix("/api").
+		// Methods may vary and are defined by the API handler.
+		Handler(newAPI(db))
+
+	rtr.Subrouter().
 		PathPrefix("/@").
-		HandleFunc(index(string(publicDir)))
-	r.Subrouter().
 		Methods(http.MethodGet).
-		Handler(fileServer(publicDir))
-	return r
+		HandleFunc(index(string(publicDir)))
+
+	// Everything else goes to the file server.
+	rtr.Subrouter().
+		Methods(http.MethodGet).
+		Handler(http.FileServer(publicDir))
+
+	return rtr
 }
 
-func api(r *mux.Router, conn *sqlx.DB) {
-	db := &database{
-		users: users.NewUsers(conn),
-	}
-	r.Subrouter().
-		Path("/signup").
-		Methods(http.MethodPost).
-		HandleFunc(db.signup())
-	r.Subrouter().
-		Path("/login").
-		Methods(http.MethodPost).
-		HandleFunc(db.login())
-}
-
+// index sends client's index.html file in response to every request that starts
+// with /@ (which signifies that this is an internal Elm routing URL).
 func index(publicDir string) mux.View {
 	return func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path.Join(publicDir, "index.html"))
 	}
-}
-
-func fileServer(dir http.Dir) http.Handler {
-	return http.FileServer(dir)
 }
