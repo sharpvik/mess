@@ -22,6 +22,6 @@ func (u *users) Add(user *User) (err error) {
 func (u *users) Get(handle string) (user *User, err error) {
 	user = new(User)
 	err = u.repo.Get(user,
-		`SELECT hash, salt FROM users WHERE handle = $1`, handle)
+		`SELECT handle, name, hash, salt FROM users WHERE handle = $1`, handle)
 	return
 }
