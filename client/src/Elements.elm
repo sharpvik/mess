@@ -5,15 +5,11 @@ import Html.Attributes exposing (..)
 import Location
 
 
-topbar : String -> Html msg
-topbar head =
+topbarWithRightSide : String -> Html msg -> Html msg
+topbarWithRightSide title rhs =
     header [ class "topbar" ]
-        [ h1 [] [ text head ]
-        , div []
-            [ a [ href Location.signup ] [ text "Sign Up" ]
-            , text " | "
-            , a [ href Location.login ] [ text "Log In" ]
-            ]
+        [ h1 [] [ text title ]
+        , rhs
         ]
 
 

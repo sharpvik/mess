@@ -1,7 +1,7 @@
 module Page.Home exposing (..)
 
 import Browser exposing (Document)
-import Elements exposing (topbar)
+import Elements
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -12,7 +12,12 @@ view : Document msg
 view =
     { title = "Home @Mess"
     , body =
-        [ topbar "Mess"
+        [ Elements.topbarWithRightSide "Mess" <|
+            div []
+                [ a [ href Location.signup ] [ text "Sign Up" ]
+                , text " | "
+                , a [ href Location.login ] [ text "Log In" ]
+                ]
         , section [ class "passage" ]
             [ h1 [] [ text "Coming soon..." ]
             , p []

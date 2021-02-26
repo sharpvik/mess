@@ -32,14 +32,14 @@ init auth =
 type Model
     = Signup UserSignupData
     | Login UserLoginData
-    | SignupResult (Maybe (Result String String))
+    | AuthResult AuthCase (Maybe (Result String String))
 
 
 type Msg
     = SignupFormKeyDown SignupFormField String
-    | FormSubmit Location.Dest Encode.Value
+    | FormSubmit AuthCase Encode.Value
     | LoginFormKeyDown LoginFormField String
-    | GotSignupResult (Result String String)
+    | GotAuthResult AuthCase (Result String String)
 
 
 
@@ -59,18 +59,28 @@ update msg model =
             , Cmd.none
             )
 
-        ( FormSubmit dest json, _ ) ->
-            ( SignupResult Nothing
+        ( FormSubmit authCase json, _ ) ->
+            let
+                dest =
+                    case authCase of
+                        Route.Signup ->
+                            Location.apiSignup
+
+                        Route.Login ->
+                            Location.apiLogin
+            in
+            ( AuthResult authCase Nothing
               -- expecting response from server
             , Http.post
                 { url = dest
                 , body = Http.jsonBody json
-                , expect = expectResponseMessage GotSignupResult
+                , expect =
+                    expectResponseMessage <| GotAuthResult authCase
                 }
             )
 
-        ( GotSignupResult result, _ ) ->
-            ( Just result |> SignupResult
+        ( GotAuthResult authCase result, _ ) ->
+            ( AuthResult authCase <| Just result
             , Cmd.none
             )
 
@@ -111,6 +121,10 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     let
+        topbar =
+            Elements.topbarWithRightSide "Auth" <|
+                a [ href Location.home ] [ text "Home" ]
+
         handleInput val onIn =
             input
                 [ type_ "text"
@@ -148,55 +162,80 @@ view model =
     , body =
         case model of
             Signup data ->
-                [ Elements.topbar "Auth"
-                , Html.form
-                    [ class "creds-form"
-                    , onSubmit (FormSubmit Location.apiSignup (jsonEncodeUserSignupData data))
-                    ]
-                    [ handleInput data.handle (SignupFormKeyDown SignupHandle)
-                    , input
-                        [ type_ "text"
-                        , name "name"
-                        , placeholder "Your Name"
-                        , required True
-                        , value data.name
-                        , maxlength 100
-                        , onInput (SignupFormKeyDown SignupName)
+                [ topbar
+                , div [ class "creds-form-container" ]
+                    [ div [ class "tabs" ]
+                        [ a [ href Location.signup, class "tab active" ] [ text "Sign Up" ]
+                        , a [ href Location.login, class "tab" ] [ text "Log In" ]
                         ]
-                        []
-                    , passwordInput data.password (SignupFormKeyDown SignupPassword)
-                    , submitButton
+                    , Html.form
+                        [ class "creds-form"
+                        , onSubmit (FormSubmit Route.Signup (jsonEncodeUserSignupData data))
+                        ]
+                        [ handleInput data.handle (SignupFormKeyDown SignupHandle)
+                        , input
+                            [ type_ "text"
+                            , name "name"
+                            , placeholder "Your Name"
+                            , required True
+                            , value data.name
+                            , maxlength 100
+                            , onInput (SignupFormKeyDown SignupName)
+                            ]
+                            []
+                        , passwordInput data.password (SignupFormKeyDown SignupPassword)
+                        , submitButton
+                        ]
                     ]
                 ]
 
             Login data ->
-                [ Elements.topbar "Auth"
-                , Html.form
-                    [ class "creds-form"
-                    , onSubmit (FormSubmit Location.apiLogin (jsonEncodeUserLoginData data))
-                    ]
-                    [ handleInput data.handle (LoginFormKeyDown LoginHandle)
-                    , passwordInput data.password (LoginFormKeyDown LoginPassword)
-                    , submitButton
+                [ topbar
+                , div [ class "creds-form-container" ]
+                    [ div [ class "tabs" ]
+                        [ a [ href Location.signup, class "tab" ] [ text "Sign Up" ]
+                        , a [ href Location.login, class "tab active" ] [ text "Log In" ]
+                        ]
+                    , Html.form
+                        [ class "creds-form"
+                        , onSubmit (FormSubmit Route.Login (jsonEncodeUserLoginData data))
+                        ]
+                        [ handleInput data.handle (LoginFormKeyDown LoginHandle)
+                        , passwordInput data.password (LoginFormKeyDown LoginPassword)
+                        , submitButton
+                        ]
                     ]
                 ]
 
-            SignupResult Nothing ->
+            AuthResult _ Nothing ->
                 [ Elements.loader ]
 
-            SignupResult (Just (Ok message)) ->
+            AuthResult authCase (Just (Ok message)) ->
                 [ div [ class "passage" ]
                     [ h1 [] [ text "Success!" ]
                     , p [] [ text message ]
-                    , Elements.buttonLink Location.home "Go Back"
+                    , case authCase of
+                        Route.Signup ->
+                            Elements.buttonLink Location.login "Log In"
+
+                        Route.Login ->
+                            Elements.buttonLink Location.home "Go Back"
                     ]
                 ]
 
-            SignupResult (Just (Err message)) ->
+            AuthResult authCase (Just (Err message)) ->
                 [ div [ class "passage" ]
                     [ h1 [] [ text "Failure..." ]
                     , p [] [ text message ]
-                    , Elements.buttonLink Location.signup "Try Again"
+                    , Elements.buttonLink
+                        (case authCase of
+                            Route.Signup ->
+                                Location.signup
+
+                            Route.Login ->
+                                Location.login
+                        )
+                        "Try Again"
                     ]
                 ]
     }
