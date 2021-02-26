@@ -32,14 +32,14 @@ init auth =
 type Model
     = Signup UserSignupData
     | Login UserLoginData
-    | SignupResult (Maybe (Result Http.Error String))
+    | SignupResult (Maybe (Result String String))
 
 
 type Msg
     = SignupFormKeyDown SignupFormField String
     | FormSubmit Location.Dest Encode.Value
     | LoginFormKeyDown LoginFormField String
-    | GotSignupResult (Result Http.Error String)
+    | GotSignupResult (Result String String)
 
 
 
@@ -65,7 +65,7 @@ update msg model =
             , Http.post
                 { url = dest
                 , body = Http.jsonBody json
-                , expect = Http.expectString GotSignupResult
+                , expect = expectResponseMessage GotSignupResult
                 }
             )
 
@@ -76,6 +76,23 @@ update msg model =
 
         ( _, _ ) ->
             ( model, Cmd.none )
+
+
+expectResponseMessage :
+    (Result String String -> msg)
+    -> Http.Expect msg
+expectResponseMessage toMsg =
+    Http.expectStringResponse toMsg <|
+        \response ->
+            case response of
+                Http.BadStatus_ _ message ->
+                    Err message
+
+                Http.GoodStatus_ _ message ->
+                    Ok message
+
+                _ ->
+                    Err "Something went terribly wrong... I'll try to fix it."
 
 
 
@@ -175,10 +192,10 @@ view model =
                     ]
                 ]
 
-            SignupResult (Just (Err _)) ->
+            SignupResult (Just (Err message)) ->
                 [ div [ class "passage" ]
                     [ h1 [] [ text "Failure..." ]
-                    , p [] [ text "Something went terribly wrong." ]
+                    , p [] [ text message ]
                     , Elements.buttonLink Location.signup "Try Again"
                     ]
                 ]
