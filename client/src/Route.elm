@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromUrl)
+module Route exposing (AuthCase(..), Route(..), fromUrl)
 
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, map, oneOf, s)
@@ -10,15 +10,26 @@ type alias UrlParser a =
 
 type Route
     = Home
-    | Signup
+    | Auth AuthCase
+
+
+type AuthCase
+    = Signup
+    | Login
+
+
+do : Parser a a
+do =
+    s "@"
 
 
 urlParser : UrlParser a
 urlParser =
     oneOf
         [ map Home Parser.top
-        , map Home (s "@") -- this duplication is due to virtual routing
-        , map Signup (s "@signup")
+        , map Home do -- this duplication is due to virtual routing
+        , map (Auth Signup) (do </> s "signup")
+        , map (Auth Login) (do </> s "login")
         ]
 
 

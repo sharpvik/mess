@@ -27,8 +27,8 @@ func (st SignedToken) WrapInCookie() *http.Cookie {
 	return &http.Cookie{
 		Name:     "jwt",
 		Value:    string(st),
-		Domain:   "chatic.live",
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 	}
 }
 

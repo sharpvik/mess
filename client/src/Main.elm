@@ -6,8 +6,8 @@ import Elements
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Page.Auth
 import Page.Home
-import Page.Signup
 import Route exposing (Route)
 import Url exposing (Url)
 
@@ -52,8 +52,8 @@ mux route model =
         Route.Home ->
             ( Home (toKey model), Cmd.none )
 
-        Route.Signup ->
-            norm (Signup (toKey model)) GotSignupMsg Page.Signup.init
+        Route.Auth subRoute ->
+            norm (Signup (toKey model)) GotSignupMsg (Page.Auth.init subRoute)
 
 
 
@@ -79,7 +79,7 @@ view model =
             Page.Home.view
 
         Signup _ signupModel ->
-            norm GotSignupMsg (Page.Signup.view signupModel)
+            norm GotSignupMsg (Page.Auth.view signupModel)
 
 
 
@@ -89,13 +89,13 @@ view model =
 type Model
     = Redirect Nav.Key
     | Home Nav.Key
-    | Signup Nav.Key Page.Signup.Model
+    | Signup Nav.Key Page.Auth.Model
 
 
 type Msg
     = LinkClicked UrlRequest
     | LinkChanged Url
-    | GotSignupMsg Page.Signup.Msg
+    | GotSignupMsg Page.Auth.Msg
 
 
 
@@ -132,7 +132,7 @@ update msg model =
         GotSignupMsg signupMsg ->
             case model of
                 Signup key signupModel ->
-                    Page.Signup.update signupMsg signupModel
+                    Page.Auth.update signupMsg signupModel
                         |> norm (Signup key) GotSignupMsg
 
                 _ ->

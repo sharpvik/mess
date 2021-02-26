@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
@@ -49,6 +50,9 @@ func (db *api) signup(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Errorf("failed to add user %s: %s", user.Handle, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "🙀 For some reason, I can't encrypt your password. ",
+			"It has to be done for security reasons, though... ",
+			"Please, try to fill in the form again!")
 		return
 	}
 	user.Password = hash
@@ -58,10 +62,13 @@ func (db *api) signup(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Errorf("failed to add user %s: %s", user.Handle, err)
 		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "🙀 Looks like some opportunist came before you and has reserved the '%s' username. Try to come up with something else!",
+			user.Handle)
 		return
 	}
 
 	log.Infof("user %s successfully added", user.Handle)
+	fmt.Fprintf(w, "🤠 Welcome to the family, %s!", user.Handle)
 }
 
 func (db *api) login(w http.ResponseWriter, r *http.Request) {
@@ -74,12 +81,16 @@ func (db *api) login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Errorf("failed to access user's password info")
 		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "🙀 I looked through my records, and I couldn't find a user with username '%s' anywhere. Make sure you didn't make a typo!",
+			user.Handle)
 		return
 	}
 
 	if !security.CheckPasswordHash(user.Password, u.Password, u.Salt) {
 		log.Error("invalid password")
 		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprintf(w, "🙀 The human knows as '%s', has a different passphrase to what you've entered. Make sure you didn't make a typo!",
+			user.Handle)
 		return
 	}
 
@@ -87,9 +98,12 @@ func (db *api) login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Errorf("failed to create JWT token: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "🙀 I can't seem to generate an identifier for you... ",
+			"It's my fault. I'll try to fix this as soon as possible!")
 		return
 	}
 
 	http.SetCookie(w, token.WrapInCookie())
 	log.Info("login request approved")
+	fmt.Fprintf(w, "🤠 Welcome back, %s!", user.Handle)
 }

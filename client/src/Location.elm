@@ -39,4 +39,9 @@ home =
 
 signup : Dest
 signup =
-    "/@signup"
+    "/@/signup"
+
+
+login : Dest
+login =
+    "/@/login"
