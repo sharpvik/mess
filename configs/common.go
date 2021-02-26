@@ -2,7 +2,6 @@ package configs
 
 import (
 	"flag"
-	"os"
 
 	"github.com/sharpvik/log-go"
 )
@@ -18,14 +17,6 @@ func MustInit() (config Config) {
 	log.Debug("config common")
 	config.Database = mustInitDB()
 	config.Server = mustInitServer()
-	return
-}
-
-func mustGet(key string) (r string) {
-	r = os.Getenv(key)
-	if r == "" {
-		log.Fatal("failed to get '%s'", key)
-	}
 	return
 }
 

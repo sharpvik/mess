@@ -1,3 +1,3 @@
 drop table chats;
 delete from chats
-where name='COZY CHAT';
+where name = 'COZY CHAT';

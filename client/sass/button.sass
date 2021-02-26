@@ -1,0 +1,26 @@
+@import colors
+@import props
+
+.button
+    background-color: $accent-color
+    display: inline-block
+    text-transform: uppercase
+    text-decoration: none
+    font-weight: 600
+    padding: 10px 15px
+    color: white
+    border: none
+    cursor: pointer
+    +round-corners()
+    +elevation(2px)
+    transition: all 0.2s
+
+    &:hover
+        +elevation(3px)
+        background-color: $light-accent-color
+        transition: all 0.2s
+
+    &:active
+        +elevation(1px)
+        background-color: $dark-accent-color
+        transition: all 0.2s

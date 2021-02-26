@@ -1,3 +1,5 @@
+// Package server contains all functions and methods for the main server that is
+// the host to all API endpoints and static files for the chat.
 package server
 
 import (
@@ -8,9 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/sharpvik/log-go"
 
-	"github.com/sharpvik/mess/server/configs"
+	"github.com/sharpvik/mess/configs"
 )
 
 // Server is a wrapper around http.Server that allows us to define our own
@@ -20,17 +23,10 @@ type Server struct {
 }
 
 // NewServer returns appropriate server based on the mode and configs.
-func NewServer(config configs.Server) (serv *Server) {
-	serv = NewBasicServer()
-
-	if config.DevMode {
-		toDevServer(serv)
-	} else {
-		toProdServer(serv)
-	}
-
-	serv.server.Handler = newServerHandler(config.PublicDir)
-
+func NewServer(config configs.Server, db *sqlx.DB) (s *Server) {
+	s = NewBasicServer()
+	s.setMode(config.DevMode)
+	s.server.Handler = newServerHandler(config.PublicDir, db)
 	return
 }
 
@@ -48,6 +44,7 @@ func NewBasicServer() *Server {
 // Grace allows Server to shutdown gracefully based on an external done chan.
 func (s *Server) Grace(done chan bool) {
 	quit := make(chan os.Signal, 1)
+	defer close(quit)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	<-quit

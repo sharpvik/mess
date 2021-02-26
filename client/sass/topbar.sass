@@ -1,0 +1,22 @@
+@import props
+@import colors
+
+.topbar
+    display: flex
+    justify-content: space-between
+    padding: 0 20px
+    +elevation(4px)
+
+.topbar *
+    line-height: 60px
+
+.topbar h1
+    font-size: 22px
+    font-weight: 500
+
+.topbar a
+    color: $dark-grey
+    text-decoration: none
+
+    &:hover
+        text-decoration: underline

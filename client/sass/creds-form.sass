@@ -1,0 +1,58 @@
+@import colors
+@import props
+
+.creds-form-container
+    background: rgba(255, 255, 255, 0)
+    width: 90%
+    max-width: 300px
+    margin: 25px auto
+    +elevation(3px)
+    +round-corners()
+    overflow: hidden
+
+    .tabs
+        width: 100%
+        display: flex
+
+        & .tab
+            width: 50%
+            line-height: 50px
+            text-align: center
+            border-bottom: 3px solid white
+            text-decoration: none
+            color: black
+            transition: all 0.1s
+
+        & .active
+            font-weight: 600
+            background-color: $almost-white
+            border-bottom: 3px solid $accent-color
+            transition: all 0.1s
+
+    .creds-form
+        display: flex
+        flex-direction: column
+        padding: 20px
+        padding-bottom: 0
+        text-align: center
+        border-top: 1px solid $light-grey
+
+        & *
+            margin-bottom: 20px
+
+        & button
+            font-size: 16px
+            margin-bottom: 0
+
+        & input
+            display: block
+            border: none
+            border-radius: 0
+            border-bottom: 2px solid $light-grey
+            padding: 7px 10px
+            transition: border 0.3s
+            font-size: 16px
+
+            &:focus
+                border-bottom: 2px solid $dark-grey
+                transition: border 0.3s

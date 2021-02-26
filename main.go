@@ -4,9 +4,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sharpvik/log-go"
 
-	"github.com/sharpvik/mess/server/configs"
-	"github.com/sharpvik/mess/server/database"
-	"github.com/sharpvik/mess/server/server"
+	"github.com/sharpvik/mess/configs"
+	"github.com/sharpvik/mess/database"
+	"github.com/sharpvik/mess/server"
 )
 
 // init simply loads environment from the .env file.
@@ -26,10 +26,10 @@ func mustInit() (config configs.Config, db *database.Database) {
 }
 
 func main() {
-	config, _ := mustInit()
+	config, db := mustInit()
 	log.Debug("init successfull")
 
-	serv := server.NewServer(config.Server)
+	serv := server.NewServer(config.Server, db.Conn)
 	done := make(chan bool, 1)
 	go serv.ServeWithGrace(done)
 
