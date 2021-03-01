@@ -3,7 +3,7 @@ FROM ubuntudesign/sass AS styles_builder
 RUN mkdir /cli
 WORKDIR /cli
 COPY ./client /cli
-RUN mkdir /cli/dist/css
+RUN if [ ! -d "/cli/dist/css" ]; then mkdir /cli/dist/css; fi
 RUN sass sass/main.sass:dist/css/main.css
 
 
@@ -15,7 +15,7 @@ WORKDIR /app
 # Copy client from this folder to WORKDIR.
 COPY ./client /app
 COPY --from=styles_builder /cli/dist /app/dist
-RUN mkdir /app/dist/js
+RUN if [ ! -d "/app/dist/js" ]; then mkdir /app/dist/js; fi
 # Build the client.
 RUN elm make src/Main.elm --output dist/js/app.js   # => /app/dist
 
