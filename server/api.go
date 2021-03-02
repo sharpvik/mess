@@ -10,34 +10,40 @@ import (
 	"github.com/sharpvik/mux"
 
 	"github.com/sharpvik/mess/auth"
+	"github.com/sharpvik/mess/database/chats"
 	"github.com/sharpvik/mess/database/users"
 	"github.com/sharpvik/mess/security"
 )
 
 type api struct {
 	users users.Users
+	chats chats.Chats
 }
 
-func newAPI(db *sqlx.DB) *api {
-	return &api{
+func newAPI(db *sqlx.DB) http.Handler {
+	i := &api{
 		users: users.NewUsers(db),
+		chats: chats.NewChats(db),
 	}
-}
 
-func (db *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rtr := mux.New()
 
 	rtr.Subrouter().
 		Path("/signup").
 		Methods(http.MethodPost).
-		HandleFunc(db.signup)
+		HandleFunc(i.signup)
 
 	rtr.Subrouter().
 		Path("/login").
 		Methods(http.MethodPost).
-		HandleFunc(db.login)
+		HandleFunc(i.login)
 
-	rtr.ServeHTTP(w, r)
+	rtr.Subrouter().
+		Path("/mychats").
+		Methods(http.MethodGet).
+		HandleFunc(i.myChats)
+
+	return rtr
 }
 
 func (db *api) signup(w http.ResponseWriter, r *http.Request) {
@@ -63,6 +69,12 @@ func (db *api) signup(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "🙀 Looks like some opportunist came before you and has reserved the '%s' username. Try to come up with something else!",
 			user.Handle)
 		return
+	}
+
+	cozyChatID := 1 // COZY CHAT is always the first chat in the database!
+	err = db.chats.AddUserToChat(user.Handle, cozyChatID)
+	if err != nil {
+		log.Errorf("failed to add user %s to COZY CHAT: %s", user.Handle, err)
 	}
 
 	log.Infof("user %s successfully added", user.Handle)
@@ -103,4 +115,30 @@ func (db *api) login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, token.WrapInCookie())
 	log.Info("login request approved")
 	fmt.Fprintf(w, "🤠 Welcome back, %s!", u.Name)
+}
+
+func (db *api) myChats(w http.ResponseWriter, r *http.Request) {
+	token, status, err := auth.TokenFromRequestCookie(r)
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(status)
+		return
+	}
+
+	handle := token.Claims.(*auth.Claims).UserHandle
+	log.Infof("user '%s' is requesting their chats list", handle)
+
+	mychats, err := db.chats.GetForUser(handle)
+	if err != nil {
+		log.Errorf("failed to get user chats: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(mychats)
+	if err != nil {
+		log.Errorf("failed to stringify user chats: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

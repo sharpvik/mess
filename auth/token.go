@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -25,7 +26,7 @@ func NewSignedJWTTokenWithClaimsForUser(handle string) (SignedToken, error) {
 
 func (st SignedToken) WrapInCookie() *http.Cookie {
 	return &http.Cookie{
-		Name:     "jwt",
+		Name:     CookieName,
 		Value:    string(st),
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
@@ -34,4 +35,33 @@ func (st SignedToken) WrapInCookie() *http.Cookie {
 
 func (st SignedToken) ParseToken() (*jwt.Token, error) {
 	return jwt.ParseWithClaims(string(st), &Claims{}, keyFunc)
+}
+
+func TokenFromRequestCookie(r *http.Request) (
+	token *jwt.Token, status int, err error) {
+
+	status = http.StatusOK
+
+	cookie, err := r.Cookie(CookieName)
+	if err != nil {
+		err = fmt.Errorf("unauthorised request to get chats: %s", err)
+		status = http.StatusUnauthorized
+		return
+	}
+
+	token, err = SignedToken(cookie.Value).ParseToken()
+	if err != nil {
+		err = fmt.Errorf(
+			"unauthorised request to get chats: invaild token: %s", err)
+		status = http.StatusUnauthorized
+		return
+	}
+
+	if !token.Valid {
+		err = fmt.Errorf("unauthorised request to get chats: invaild token")
+		status = http.StatusUnauthorized
+		return
+	}
+
+	return
 }
