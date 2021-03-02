@@ -1,9 +1,5 @@
 package users
 
-import (
-	"database/sql"
-)
-
 // Users service.
 type Users interface {
 	// Add new User to Database.
@@ -13,9 +9,10 @@ type Users interface {
 	Get(string) (*User, error)
 }
 
-// Repo specification.
-type Repo interface {
-	NamedExec(string, interface{}) (sql.Result, error)
-	Exec(string, ...interface{}) (sql.Result, error)
-	Get(dest interface{}, query string, args ...interface{}) error
+// User row.
+type User struct {
+	Handle   string
+	Name     string
+	Password string `db:"hash"`
+	Salt     string
 }
