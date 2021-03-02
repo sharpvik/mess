@@ -12,11 +12,9 @@ RUN sass sass/main.sass:dist/css/main.css
 FROM codesimple/elm:0.19 AS client_builder
 RUN mkdir /app
 WORKDIR /app
-# Copy client from this folder to WORKDIR.
 COPY ./client /app
 COPY --from=styles_builder /cli/dist /app/dist
 RUN if [ ! -d "/app/dist/js" ]; then mkdir /app/dist/js; fi
-# Build the client.
 RUN elm make src/Main.elm --output dist/js/app.js   # => /app/dist
 
 
@@ -27,11 +25,8 @@ RUN mkdir /app
 WORKDIR /app
 # Add trusted certificates.
 RUN apk --no-cache add ca-certificates
-# Copy everything from this folder to WORKDIR.
 COPY . .
-# Specify Go build options.
 ENV CGO_ENABLED=0 GOOS=linux GO111MODULE=on
-# Compile the program and save in WORKDIR.
 RUN go build -o serve  # => /srv/serve
 
 
@@ -40,7 +35,7 @@ RUN go build -o serve  # => /srv/serve
 FROM ubuntu:latest
 RUN mkdir /mess
 WORKDIR /mess
-# Copying over the trusted TLS certificates.
+# Copying things over ...
 COPY --from=client_builder /app/dist /mess/client/dist
 COPY --from=server_builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=server_builder /app/serve /mess/serve
@@ -56,7 +51,6 @@ COPY ./.env /mess/.env
 #
 # Exposing default HTTP, HTTPS, and the dev port.
 EXPOSE 8080 80 443
-
 
 
 # Start the server.
