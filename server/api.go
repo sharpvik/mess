@@ -39,9 +39,14 @@ func newAPI(db *sqlx.DB) http.Handler {
 		HandleFunc(i.login)
 
 	rtr.Subrouter().
-		Path("/mychats").
+		Path("/chats").
 		Methods(http.MethodGet).
-		HandleFunc(i.myChats)
+		HandleFunc(i.listChats)
+
+	rtr.Subrouter().
+		Path("/profile").
+		Methods(http.MethodGet).
+		HandleFunc(i.profile)
 
 	return rtr
 }
@@ -117,28 +122,32 @@ func (db *api) login(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "🤠 Welcome back, %s!", u.Name)
 }
 
-func (db *api) myChats(w http.ResponseWriter, r *http.Request) {
-	token, status, err := auth.TokenFromRequestCookie(r)
+func (db *api) listChats(w http.ResponseWriter, r *http.Request) {
+	handle, status, err := auth.UserHandleFromRequestCookie(r)
 	if err != nil {
 		log.Error(err)
 		w.WriteHeader(status)
 		return
 	}
 
-	handle := token.Claims.(*auth.Claims).UserHandle
 	log.Infof("user '%s' is requesting their chats list", handle)
 
-	mychats, err := db.chats.GetForUser(handle)
+	db.getEncodeAndLog(w, func() (interface{}, error) {
+		return db.chats.GetForUser(handle)
+	})
+}
+
+func (db *api) profile(w http.ResponseWriter, r *http.Request) {
+	handle, status, err := auth.UserHandleFromRequestCookie(r)
 	if err != nil {
-		log.Errorf("failed to get user chats: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Error(err)
+		w.WriteHeader(status)
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(mychats)
-	if err != nil {
-		log.Errorf("failed to stringify user chats: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	log.Infof("user '%s' is requesting their profile", handle)
+
+	db.getEncodeAndLog(w, func() (interface{}, error) {
+		return db.users.GetProfile(handle)
+	})
 }

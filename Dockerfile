@@ -5,6 +5,7 @@ WORKDIR /cli
 COPY ./client /cli
 RUN if [ ! -d "/cli/dist/css" ]; then mkdir /cli/dist/css; fi
 RUN sass sass/main.sass:dist/css/main.css
+# => /cli/dist/ + css
 
 
 
@@ -15,7 +16,8 @@ WORKDIR /app
 COPY ./client /app
 COPY --from=styles_builder /cli/dist /app/dist
 RUN if [ ! -d "/app/dist/js" ]; then mkdir /app/dist/js; fi
-RUN elm make src/Main.elm --output dist/js/app.js   # => /app/dist
+RUN elm make src/Main.elm --output dist/js/app.js
+# => /app/dist/
 
 
 
@@ -27,7 +29,8 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates
 COPY . .
 ENV CGO_ENABLED=0 GOOS=linux GO111MODULE=on
-RUN go build -o serve  # => /srv/serve
+RUN go build -o serve
+# => /srv/serve/
 
 
 
@@ -44,13 +47,13 @@ COPY ./.env /mess/.env
 # At this point we will have:
 #
 #     /mess
-#     --> client/dist/
-#     --> migrations/
+#     --> client/dist/...
+#     --> migrations/...
 #     --> serve*
 #     --> .env
 #
 # Exposing default HTTP, HTTPS, and the dev port.
-EXPOSE 8080 80 443
+EXPOSE 80 443
 
 
 # Start the server.

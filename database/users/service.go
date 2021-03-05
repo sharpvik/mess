@@ -5,14 +5,11 @@ type Users interface {
 	// Add new User to Database.
 	Add(*User) error
 
-	// GetHash of this user's password.
+	// Get all user info by handle.
 	Get(string) (*User, error)
-}
 
-// User row.
-type User struct {
-	Handle   string
-	Name     string
-	Password string `db:"hash"`
-	Salt     string
+	/* Methods that return json.Marshaler are here to separate concerns. */
+
+	// GetProfile by handle.
+	GetProfile(string) (*Profile, error)
 }

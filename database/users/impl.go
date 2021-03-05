@@ -25,3 +25,11 @@ func (u *users) Get(handle string) (user *User, err error) {
 		`SELECT handle, name, hash, salt FROM users WHERE handle = $1`, handle)
 	return
 }
+
+func (u *users) GetProfile(handle string) (profile *Profile, err error) {
+	user, err := u.Get(handle)
+	if err != nil {
+		return
+	}
+	return newProfile(user), nil
+}
