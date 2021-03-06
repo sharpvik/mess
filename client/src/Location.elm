@@ -45,3 +45,8 @@ signup =
 login : Dest
 login =
     "/@/login"
+
+
+profile : Dest
+profile =
+    "/@/profile"

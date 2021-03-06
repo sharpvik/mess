@@ -11,6 +11,7 @@ type alias UrlParser a =
 type Route
     = Home
     | Auth AuthCase
+    | Profile
 
 
 type AuthCase
@@ -18,8 +19,8 @@ type AuthCase
     | Login
 
 
-do : Parser a a
-do =
+at : Parser a a
+at =
     s "@"
 
 
@@ -27,9 +28,10 @@ urlParser : UrlParser a
 urlParser =
     oneOf
         [ map Home Parser.top
-        , map Home do -- this duplication is due to virtual routing
-        , map (Auth Signup) (do </> s "signup")
-        , map (Auth Login) (do </> s "login")
+        , map Home at -- this duplication is due to virtual routing
+        , map (Auth Signup) <| at </> s "signup"
+        , map (Auth Login) <| at </> s "login"
+        , map Profile <| at </> s "profile"
         ]
 
 

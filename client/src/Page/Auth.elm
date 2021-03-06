@@ -137,6 +137,18 @@ view model =
                 ]
                 []
 
+        nameInput val onIn =
+            input
+                [ type_ "text"
+                , name "name"
+                , placeholder "Your Name"
+                , required True
+                , value val
+                , maxlength 100
+                , onInput onIn
+                ]
+                []
+
         passwordInput val onIn =
             input
                 [ type_ "password"
@@ -173,16 +185,7 @@ view model =
                         , onSubmit (FormSubmit Route.Signup (jsonEncodeUserSignupData data))
                         ]
                         [ handleInput data.handle (SignupFormKeyDown SignupHandle)
-                        , input
-                            [ type_ "text"
-                            , name "name"
-                            , placeholder "Your Name"
-                            , required True
-                            , value data.name
-                            , maxlength 100
-                            , onInput (SignupFormKeyDown SignupName)
-                            ]
-                            []
+                        , nameInput data.name (SignupFormKeyDown SignupName)
                         , passwordInput data.password (SignupFormKeyDown SignupPassword)
                         , submitButton
                         ]

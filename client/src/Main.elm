@@ -8,7 +8,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Page.Auth
 import Page.Home
+import Page.Profile
 import Route exposing (Route)
+import Session exposing (Session)
 import Url exposing (Url)
 
 
@@ -34,11 +36,11 @@ main =
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
-    mux (Route.fromUrl url) (Redirect key)
+    mux Session.dummy (Route.fromUrl url) (Redirect key Session.dummy)
 
 
-mux : Route -> Model -> ( Model, Cmd Msg )
-mux route model =
+mux : Session -> Route -> Model -> ( Model, Cmd Msg )
+mux session route model =
     let
         norm :
             (subModel -> model)
@@ -50,10 +52,16 @@ mux route model =
     in
     case route of
         Route.Home ->
-            ( Home (toKey model), Cmd.none )
+            ( Home (toKey model) (toSession model), Cmd.none )
 
         Route.Auth subRoute ->
-            norm (Signup (toKey model)) GotSignupMsg (Page.Auth.init subRoute)
+            norm
+                (Signup (toKey model) (toSession model))
+                GotSignupMsg
+                (Page.Auth.init subRoute)
+
+        Route.Profile ->
+            ( Profile (toKey model) (toSession model), Cmd.none )
 
 
 
@@ -70,16 +78,19 @@ view model =
             }
     in
     case model of
-        Redirect _ ->
+        Redirect _ _ ->
             { title = "Redirecting..."
             , body = [ Elements.loader ]
             }
 
-        Home _ ->
-            Page.Home.view
+        Home _ session ->
+            Page.Home.view session
 
-        Signup _ signupModel ->
+        Signup _ _ signupModel ->
             norm GotSignupMsg (Page.Auth.view signupModel)
+
+        Profile _ session ->
+            Page.Profile.view session
 
 
 
@@ -87,9 +98,10 @@ view model =
 
 
 type Model
-    = Redirect Nav.Key
-    | Home Nav.Key
-    | Signup Nav.Key Page.Auth.Model
+    = Redirect Nav.Key Session
+    | Home Nav.Key Session
+    | Signup Nav.Key Session Page.Auth.Model
+    | Profile Nav.Key Session
 
 
 type Msg
@@ -115,7 +127,7 @@ update msg model =
     in
     case msg of
         LinkChanged url ->
-            mux (Route.fromUrl url) model
+            mux (toSession model) (Route.fromUrl url) model
 
         LinkClicked urlRequest ->
             case urlRequest of
@@ -131,9 +143,9 @@ update msg model =
 
         GotSignupMsg signupMsg ->
             case model of
-                Signup key signupModel ->
+                Signup key session signupModel ->
                     Page.Auth.update signupMsg signupModel
-                        |> norm (Signup key) GotSignupMsg
+                        |> norm (Signup key session) GotSignupMsg
 
                 _ ->
                     ( model, Cmd.none )
@@ -142,20 +154,33 @@ update msg model =
 toKey : Model -> Nav.Key
 toKey model =
     case model of
-        Redirect key ->
+        Redirect key _ ->
             key
 
-        Home key ->
+        Home key _ ->
             key
 
-        Signup key _ ->
+        Signup key _ _ ->
+            key
+
+        Profile key _ ->
             key
 
 
+toSession : Model -> Session
+toSession model =
+    case model of
+        Redirect _ session ->
+            session
 
--- PORTS
--- port info : String -> Cmd msg
--- SUBSCRIPTIONS
+        Home _ session ->
+            session
+
+        Signup _ session _ ->
+            session
+
+        Profile _ session ->
+            session
 
 
 subscriptions : Model -> Sub Msg
