@@ -1,4 +1,16 @@
-module Location exposing (..)
+module Location exposing
+    ( Dest
+    , apiLogin
+    , apiProfile
+    , apiSignup
+    , home
+    , login
+    , profile
+    , repo
+    , signup
+    )
+
+import Url.Builder as Build
 
 
 type alias Dest =
@@ -18,40 +30,50 @@ repo =
 -- API
 
 
+api : String -> Dest
+api sub =
+    Build.absolute [ "api", sub ] []
+
+
 apiSignup : Dest
 apiSignup =
-    "/api/signup"
+    api "signup"
 
 
 apiLogin : Dest
 apiLogin =
-    "/api/login"
+    api "login"
 
 
 apiProfile : Dest
 apiProfile =
-    "/api/profile"
+    api "profile"
 
 
 
 -- INTERNAL
 
 
+at : List String -> Dest
+at sub =
+    Build.absolute ("@" :: sub) []
+
+
 home : Dest
 home =
-    "/@"
+    at []
 
 
 signup : Dest
 signup =
-    "/@/signup"
+    at [ "signup" ]
 
 
 login : Dest
 login =
-    "/@/login"
+    at [ "login" ]
 
 
 profile : Dest
 profile =
-    "/@/profile"
+    at [ "profile" ]
