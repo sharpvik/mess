@@ -28,7 +28,17 @@ view session =
             ]
     in
     case session of
-        Session.Guest _ ->
+        Session.User _ info ->
+            { title = "Home @Mess"
+            , body =
+                withHeaderRightSide <|
+                    div []
+                        [ a [ href Location.profile ]
+                            [ text <| info.name ++ "'s Account" ]
+                        ]
+            }
+
+        _ ->
             { title = "Home @Mess"
             , body =
                 withHeaderRightSide <|
@@ -36,15 +46,5 @@ view session =
                         [ a [ href Location.signup ] [ text "Sign Up" ]
                         , text " | "
                         , a [ href Location.login ] [ text "Log In" ]
-                        ]
-            }
-
-        Session.User _ _ name ->
-            { title = "Home @Mess"
-            , body =
-                withHeaderRightSide <|
-                    div []
-                        [ a [ href Location.profile ]
-                            [ text <| name ++ "'s Account" ]
                         ]
             }

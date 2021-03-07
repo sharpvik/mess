@@ -1,6 +1,7 @@
 module Page.Auth exposing (..)
 
 import Browser exposing (Document, UrlRequest(..))
+import Browser.Navigation as Nav
 import Elements
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -9,20 +10,6 @@ import Http
 import Json.Encode as Encode
 import Location
 import Route exposing (AuthCase)
-
-
-init : AuthCase -> ( Model, Cmd Msg )
-init auth =
-    case auth of
-        Route.Signup ->
-            ( UserSignupData "" "" "" |> Signup
-            , Cmd.none
-            )
-
-        Route.Login ->
-            ( UserLoginData "" "" |> Login
-            , Cmd.none
-            )
 
 
 
@@ -40,6 +27,25 @@ type Msg
     | FormSubmit AuthCase Encode.Value
     | LoginFormKeyDown LoginFormField String
     | GotAuthResult AuthCase (Result String String)
+    | Reload
+
+
+
+-- INIT
+
+
+init : AuthCase -> ( Model, Cmd Msg )
+init auth =
+    case auth of
+        Route.Signup ->
+            ( UserSignupData "" "" "" |> Signup
+            , Cmd.none
+            )
+
+        Route.Login ->
+            ( UserLoginData "" "" |> Login
+            , Cmd.none
+            )
 
 
 
@@ -70,7 +76,6 @@ update msg model =
                             Location.apiLogin
             in
             ( AuthResult authCase Nothing
-              -- expecting response from server
             , Http.post
                 { url = dest
                 , body = Http.jsonBody json
@@ -83,6 +88,9 @@ update msg model =
             ( AuthResult authCase <| Just result
             , Cmd.none
             )
+
+        ( Reload, _ ) ->
+            ( model, Nav.load Location.profile )
 
         ( _, _ ) ->
             ( model, Cmd.none )
@@ -103,15 +111,6 @@ expectResponseMessage toMsg =
 
                 _ ->
                     Err "Something went terribly wrong... I'll try to fix it."
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
 
 
 
@@ -222,7 +221,9 @@ view model =
                             Elements.buttonLink Location.login "Log In"
 
                         Route.Login ->
-                            Elements.buttonLink Location.home "Go Back"
+                            Elements.buttonLinkWithOnClick
+                                "See Your Profile"
+                                Reload
                     ]
                 ]
 

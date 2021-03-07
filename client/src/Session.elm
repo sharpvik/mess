@@ -1,21 +1,23 @@
 module Session exposing (..)
 
 import Browser.Navigation as Nav
-
-
-type alias Handle =
-    String
-
-
-type alias Name =
-    String
+import Json.Decode as Decode exposing (Decoder)
 
 
 type Session
-    = Guest Nav.Key
-    | User Nav.Key Handle Name
+    = DidNotCheckYet Nav.Key
+    | Guest Nav.Key
+    | User Nav.Key Info
 
 
-dummy : Nav.Key -> Session
-dummy key =
-    User key "sarah" "Sarah Binet"
+type alias Info =
+    { handle : String
+    , name : String
+    }
+
+
+decoder : Decoder Info
+decoder =
+    Decode.map2 Info
+        (Decode.field "handle" Decode.string)
+        (Decode.field "name" Decode.string)

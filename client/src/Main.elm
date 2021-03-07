@@ -6,6 +6,8 @@ import Elements
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Http
+import Location
 import Page.Auth
 import Page.Home
 import Page.Profile
@@ -35,7 +37,7 @@ main =
 
 
 type Model
-    = Redirect Session
+    = Redirect Session Route
     | Home Session
     | Signup Session Page.Auth.Model
     | Profile Session
@@ -44,7 +46,8 @@ type Model
 type Msg
     = LinkClicked UrlRequest
     | LinkChanged Url
-    | GotSignupMsg Page.Auth.Msg
+    | GotAuthMsg Page.Auth.Msg
+    | GotSession (Result Http.Error Session.Info)
 
 
 
@@ -54,10 +57,10 @@ type Msg
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
     let
-        session =
-            Session.dummy key
+        route =
+            Route.fromUrl url
     in
-    mux (Route.fromUrl url) (Redirect session)
+    mux route (Redirect (Session.DidNotCheckYet key) route)
 
 
 mux : Route -> Model -> ( Model, Cmd Msg )
@@ -70,19 +73,30 @@ mux route model =
             -> ( model, Cmd msg )
         norm toModel toMsg ( subModel, cmd ) =
             ( toModel subModel, Cmd.map toMsg cmd )
-    in
-    case route of
-        Route.Home ->
-            ( Home <| toSession model, Cmd.none )
 
-        Route.Auth subRoute ->
+        session =
+            toSession model
+    in
+    case ( route, session ) of
+        ( _, Session.DidNotCheckYet _ ) ->
+            ( Redirect session route
+            , Http.get
+                { url = Location.apiProfile
+                , expect = Http.expectJson GotSession Session.decoder
+                }
+            )
+
+        ( Route.Home, _ ) ->
+            ( Home session, Cmd.none )
+
+        ( Route.Auth subRoute, _ ) ->
             norm
-                (Signup <| toSession model)
-                GotSignupMsg
+                (Signup session)
+                GotAuthMsg
                 (Page.Auth.init subRoute)
 
-        Route.Profile ->
-            ( Profile (toSession model), Cmd.none )
+        ( Route.Profile, _ ) ->
+            ( Profile session, Cmd.none )
 
 
 
@@ -99,7 +113,7 @@ view model =
             }
     in
     case model of
-        Redirect _ ->
+        Redirect _ _ ->
             { title = "Redirecting..."
             , body = [ Elements.loader ]
             }
@@ -108,7 +122,7 @@ view model =
             Page.Home.view session
 
         Signup _ signupModel ->
-            norm GotSignupMsg (Page.Auth.view signupModel)
+            norm GotAuthMsg (Page.Auth.view signupModel)
 
         Profile session ->
             Page.Profile.view session
@@ -128,16 +142,19 @@ update msg model =
             -> ( model, Cmd msg )
         norm toModel toMsg ( subModel, cmd ) =
             ( toModel subModel, Cmd.map toMsg cmd )
+
+        key =
+            toKey model
     in
-    case msg of
-        LinkChanged url ->
+    case ( msg, model ) of
+        ( LinkChanged url, _ ) ->
             mux (Route.fromUrl url) model
 
-        LinkClicked urlRequest ->
+        ( LinkClicked urlRequest, _ ) ->
             case urlRequest of
                 Internal url ->
                     ( model
-                    , Nav.pushUrl (toKey model) (Url.toString url)
+                    , Nav.pushUrl key (Url.toString url)
                     )
 
                 External href ->
@@ -145,34 +162,39 @@ update msg model =
                     , Nav.load href
                     )
 
-        GotSignupMsg signupMsg ->
-            case model of
-                Signup session signupModel ->
-                    Page.Auth.update signupMsg signupModel
-                        |> norm (Signup session) GotSignupMsg
+        ( GotAuthMsg signupMsg, Signup session signupModel ) ->
+            Page.Auth.update signupMsg signupModel
+                |> norm (Signup session) GotAuthMsg
 
-                _ ->
-                    ( model, Cmd.none )
+        ( GotSession result, Redirect _ route ) ->
+            case result of
+                Ok info ->
+                    mux route <| Redirect (Session.User (toKey model) info) route
+
+                Err _ ->
+                    mux route <| Redirect (Session.Guest <| toKey model) route
+
+        _ ->
+            ( model, Cmd.none )
 
 
 toKey : Model -> Nav.Key
 toKey model =
-    let
-        session =
-            toSession model
-    in
-    case session of
+    case toSession model of
         Session.Guest key ->
             key
 
-        Session.User key _ _ ->
+        Session.User key _ ->
+            key
+
+        Session.DidNotCheckYet key ->
             key
 
 
 toSession : Model -> Session
 toSession model =
     case model of
-        Redirect session ->
+        Redirect session _ ->
             session
 
         Home session ->

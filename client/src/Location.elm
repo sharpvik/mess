@@ -28,6 +28,11 @@ apiLogin =
     "/api/login"
 
 
+apiProfile : Dest
+apiProfile =
+    "/api/profile"
+
+
 
 -- INTERNAL
 
