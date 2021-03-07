@@ -1,6 +1,7 @@
 module Page.Profile exposing (..)
 
 import Browser exposing (Document)
+import Elements
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Location
@@ -10,13 +11,16 @@ import Session exposing (Session)
 view : Session -> Document msg
 view session =
     let
+        topbar =
+            Elements.topbar "Profile"
+
         page body =
             { title = "Profile @Mess"
-            , body = body
+            , body = topbar :: body
             }
     in
     case session of
-        Session.Guest ->
+        Session.Guest _ ->
             page
                 [ div [ class "passage" ]
                     [ h1 [] [ text "Hmm... How did you get here?" ]
@@ -25,7 +29,7 @@ view session =
                     ]
                 ]
 
-        Session.User handle name ->
+        Session.User _ handle name ->
             page
                 [ div [ class "passage" ]
                     [ h1 [] [ text name ]

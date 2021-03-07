@@ -1,5 +1,7 @@
 module Session exposing (..)
 
+import Browser.Navigation as Nav
+
 
 type alias Handle =
     String
@@ -10,10 +12,10 @@ type alias Name =
 
 
 type Session
-    = Guest
-    | User Handle Name
+    = Guest Nav.Key
+    | User Nav.Key Handle Name
 
 
-dummy : Session
-dummy =
-    User "sarah" "Sarah Binet"
+dummy : Nav.Key -> Session
+dummy key =
+    User key "sarah" "Sarah Binet"

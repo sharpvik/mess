@@ -5,6 +5,11 @@ import Html.Attributes exposing (..)
 import Location
 
 
+topbar : String -> Html msg
+topbar title =
+    header [ class "topbar" ] [ h1 [] [ text title ] ]
+
+
 topbarWithRightSide : String -> Html msg -> Html msg
 topbarWithRightSide title rhs =
     header [ class "topbar" ]

@@ -28,7 +28,7 @@ view session =
             ]
     in
     case session of
-        Session.Guest ->
+        Session.Guest _ ->
             { title = "Home @Mess"
             , body =
                 withHeaderRightSide <|
@@ -39,7 +39,7 @@ view session =
                         ]
             }
 
-        Session.User _ name ->
+        Session.User _ _ name ->
             { title = "Home @Mess"
             , body =
                 withHeaderRightSide <|
