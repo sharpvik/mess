@@ -26,25 +26,26 @@ view session =
                     [ text "Contribute" ]
                 ]
             ]
+
+        doc body =
+            { title = "Home @Mess"
+            , body = body
+            }
     in
     case session of
         Session.User _ info ->
-            { title = "Home @Mess"
-            , body =
+            doc <|
                 withHeaderRightSide <|
                     div []
                         [ a [ href Location.profile ]
                             [ text <| info.name ++ "'s Account" ]
                         ]
-            }
 
         _ ->
-            { title = "Home @Mess"
-            , body =
+            doc <|
                 withHeaderRightSide <|
                     div []
                         [ a [ href Location.signup ] [ text "Sign Up" ]
                         , text " | "
                         , a [ href Location.login ] [ text "Log In" ]
                         ]
-            }

@@ -27,23 +27,15 @@ at =
 urlParser : UrlParser a
 urlParser =
     oneOf
-        [ map Home Parser.top
-        , map Home at -- this duplication is due to virtual routing
+        [ map Profile Parser.top
+        , map Profile at -- this duplication is due to virtual routing
+        , map Profile <| at </> s "profile"
         , map (Auth Signup) <| at </> s "signup"
         , map (Auth Login) <| at </> s "login"
-        , map Profile <| at </> s "profile"
+        , map Home <| at </> s "home"
         ]
 
 
 fromUrl : Url -> Route
 fromUrl url =
-    let
-        parsed =
-            Debug.log "route" (Parser.parse urlParser url)
-    in
-    case parsed of
-        Nothing ->
-            Home
-
-        Just r ->
-            r
+    Maybe.withDefault Home <| Debug.log "route" (Parser.parse urlParser url)

@@ -20,7 +20,7 @@ import Url exposing (Url)
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
     Browser.application
         { init = init
@@ -33,7 +33,7 @@ main =
 
 
 
--- TYPES
+-- MODEL
 
 
 type Model
@@ -41,6 +41,39 @@ type Model
     | Home Session
     | Signup Session Page.Auth.Model
     | Profile Session
+
+
+toKey : Model -> Nav.Key
+toKey model =
+    case toSession model of
+        Session.Guest key ->
+            key
+
+        Session.User key _ ->
+            key
+
+        Session.DidNotCheckYet key ->
+            key
+
+
+toSession : Model -> Session
+toSession model =
+    case model of
+        Redirect session _ ->
+            session
+
+        Home session ->
+            session
+
+        Signup session _ ->
+            session
+
+        Profile session ->
+            session
+
+
+
+-- MSG
 
 
 type Msg
@@ -54,7 +87,7 @@ type Msg
 -- INIT
 
 
-init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
     let
         route =
@@ -65,6 +98,7 @@ init _ url key =
 
 mux : Route -> Model -> ( Model, Cmd Msg )
 mux route model =
+    -- We use this multiplexer to control virtual routing within the app.
     let
         norm :
             (subModel -> model)
@@ -76,6 +110,18 @@ mux route model =
 
         session =
             toSession model
+
+        -- We need this function because basic redirections trough recursive
+        -- calls to mux leave browser URL unattended, which is improper.
+        redirectToRouteIfNotLoggedIn redirectLocation loggedIn =
+            case session of
+                Session.User _ _ ->
+                    loggedIn
+
+                _ ->
+                    ( model
+                    , Nav.pushUrl (toKey model) redirectLocation
+                    )
     in
     case ( route, session ) of
         ( _, Session.DidNotCheckYet _ ) ->
@@ -96,7 +142,11 @@ mux route model =
                 (Page.Auth.init subRoute)
 
         ( Route.Profile, _ ) ->
-            ( Profile session, Cmd.none )
+            redirectToRouteIfNotLoggedIn
+                Location.home
+                -- ▲ redirecting Home if user is just a guest
+                -- ▼ or to Profile if user is logged in
+                ( Profile session, Cmd.none )
 
 
 
@@ -169,42 +219,21 @@ update msg model =
         ( GotSession result, Redirect _ route ) ->
             case result of
                 Ok info ->
-                    mux route <| Redirect (Session.User (toKey model) info) route
+                    mux route <| Redirect (Session.User key info) route
 
                 Err _ ->
-                    mux route <| Redirect (Session.Guest <| toKey model) route
+                    mux route <| Redirect (Session.Guest key) route
 
         _ ->
             ( model, Cmd.none )
 
 
-toKey : Model -> Nav.Key
-toKey model =
-    case toSession model of
-        Session.Guest key ->
-            key
 
-        Session.User key _ ->
-            key
-
-        Session.DidNotCheckYet key ->
-            key
+-- UNUSED
 
 
-toSession : Model -> Session
-toSession model =
-    case model of
-        Redirect session _ ->
-            session
-
-        Home session ->
-            session
-
-        Signup session _ ->
-            session
-
-        Profile session ->
-            session
+type alias Flags =
+    ()
 
 
 subscriptions : Model -> Sub Msg

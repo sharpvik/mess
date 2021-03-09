@@ -11,23 +11,20 @@ import Session exposing (Session)
 view : Session -> Document msg
 view session =
     let
-        topbar =
-            Elements.topbar "Profile"
+        withTopbar body =
+            doc <| Elements.topbar "Profile" :: body
 
-        page body =
-            { titleOnly | body = topbar :: body }
-
-        titleOnly =
+        doc body =
             { title = "Profile @Mess"
-            , body = []
+            , body = body
             }
     in
     case session of
         Session.DidNotCheckYet _ ->
-            { titleOnly | body = [ Elements.loader ] }
+            doc [ Elements.loader ]
 
         Session.Guest _ ->
-            page
+            withTopbar
                 [ div [ class "passage" ]
                     [ h1 [] [ text "Hmm... How did you get here?" ]
                     , p []
@@ -39,7 +36,7 @@ view session =
                 ]
 
         Session.User _ info ->
-            page
+            withTopbar
                 [ div [ class "passage" ]
                     [ h1 [] [ text info.name ]
                     , p []

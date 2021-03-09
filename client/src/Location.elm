@@ -61,7 +61,7 @@ at sub =
 
 home : Dest
 home =
-    at []
+    at [ "home" ]
 
 
 signup : Dest
