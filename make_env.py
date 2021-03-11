@@ -6,6 +6,7 @@ ALPHABET = letters + digits
 password = ''.join(choice(ALPHABET) for i in range(40))
 jwt_signing_key = ''.join(choice(ALPHABET) for i in range(64))
 TEMPLATE = f"""\
+POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_USER=mess
 POSTGRES_PASSWORD={password}
