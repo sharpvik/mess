@@ -1,8 +1,6 @@
 package server
 
-import (
-	"github.com/sharpvik/log-go"
-)
+import "github.com/sharpvik/log-go"
 
 // setMode takes a boolean flag called devMode and uses it to decide on the
 // proper server mode.

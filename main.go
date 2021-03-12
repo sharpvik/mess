@@ -11,6 +11,7 @@ import (
 
 // init simply loads environment from the .env file.
 func init() {
+	log.SetLevel(log.LevelDebug)
 	log.Debug("reading .env ...")
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("failed to read .env")

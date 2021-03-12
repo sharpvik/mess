@@ -12,11 +12,13 @@ import (
 func newServerHandler(publicDir http.Dir, db *sqlx.DB) http.Handler {
 	rtr := mux.New()
 
+	// API.
 	rtr.Subrouter().
 		PathPrefix("/api").
 		// Methods may vary and are defined by the API handler.
 		Handler(newAPI(db))
 
+	// Virtual routing in Elm.
 	rtr.Subrouter().
 		PathPrefix("/@").
 		Methods(http.MethodGet).
