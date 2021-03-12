@@ -3,9 +3,6 @@ package database
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"path"
-	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -13,6 +10,7 @@ import (
 	"github.com/sharpvik/log-go"
 
 	"github.com/sharpvik/mess/configs"
+	"github.com/sharpvik/mess/migrations"
 )
 
 // Database represents the generic database interface.
@@ -43,6 +41,8 @@ func MustInit(config configs.Database) (db *Database) {
 	return
 }
 
+// connect attempts to connect to the database given a threshold of allowed
+// tries. As soon as there are no more tries left, it returns an error.
 func connect(details string, tries int) (dbi *sqlx.DB, err error) {
 	if tries < 1 {
 		err = errors.New("database connection attempts limit reached")
@@ -58,36 +58,25 @@ func connect(details string, tries int) (dbi *sqlx.DB, err error) {
 	return
 }
 
+// up only applies migrations ending with ".up.sql".
 func (db *Database) up() {
-	migrations, err := ioutil.ReadDir(db.Config.Migrations)
+	migrations, err := migrations.FilterUpMigrations()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to list up migrations: %s", err)
+		return
 	}
 
 	log.Debug("applying migrations ...")
 	for _, file := range migrations {
-		filename := file.Name()
-		filepath := path.Join(db.Config.Migrations, filename)
-
-		if !isUpMigration(filename) {
-			continue
-		}
-
-		log.Debug(filename)
-		if err := readAndApply(db.Conn, filepath); err != nil {
+		if err := readAndApply(db.Conn, file.Name()); err != nil {
 			log.Fatal(err)
 		}
 	}
 }
 
-func isUpMigration(filename string) bool {
-	return strings.HasSuffix(filename, ".up.sql")
-}
-
-// readAndApply reads migration from file and applies it over the database
-// connection.
 func readAndApply(conn *sqlx.DB, path string) (err error) {
-	migration, err := ioutil.ReadFile(path)
+	log.Debug(path)
+	migration, err := migrations.ReadFile(path)
 	if err != nil {
 		return
 	}

@@ -1,9 +1,9 @@
 # Environment files.
+.DS_Store
 .idea
 .env
+.vscode
 
 # Executable files.
 mess
-
-# Public folder.
-public
+serve

@@ -10,6 +10,7 @@ type User struct {
 
 // Profile for user.
 type Profile struct {
+	Avatar string `json:"avatar"`
 	Handle string `json:"handle"`
 	Name   string `json:"name"`
 }

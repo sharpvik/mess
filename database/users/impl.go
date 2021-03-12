@@ -1,6 +1,8 @@
 package users
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/jmoiron/sqlx"
+)
 
 // users implements Users.
 type users struct {
@@ -14,7 +16,8 @@ func NewUsers(db *sqlx.DB) Users {
 
 func (u *users) Add(user *User) (err error) {
 	_, err = u.db.Exec(
-		`INSERT INTO users (handle, name, hash, salt) VALUES ($1, $2, $3, $4)`,
+		`INSERT INTO users (handle, name, hash, salt)
+		VALUES ($1, $2, $3, $4)`,
 		user.Handle, user.Name, user.Password, user.Salt)
 	return
 }
