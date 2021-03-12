@@ -21,3 +21,16 @@ decoder =
     Decode.map2 Info
         (Decode.field "handle" Decode.string)
         (Decode.field "name" Decode.string)
+
+
+toKey : Session -> Nav.Key
+toKey session =
+    case session of
+        DidNotCheckYet key ->
+            key
+
+        Guest key ->
+            key
+
+        User key _ ->
+            key

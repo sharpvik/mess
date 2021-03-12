@@ -1,5 +1,6 @@
 module Location exposing
     ( Dest
+    , apiAvatar
     , apiLogin
     , apiProfile
     , apiSignup
@@ -48,6 +49,11 @@ apiLogin =
 apiProfile : Dest
 apiProfile =
     api "profile"
+
+
+apiAvatar : Dest
+apiAvatar =
+    api "avatar"
 
 
 

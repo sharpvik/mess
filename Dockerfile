@@ -43,10 +43,12 @@ COPY --from=client_builder /app/dist /mess/client/dist
 COPY --from=server_builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=server_builder /app/serve /mess/serve
 COPY ./.env /mess/.env
+COPY ./storage /mess/storage
 # At this point we will have:
 #
 #     /mess
 #     --> client/dist/
+#     --> storage/
 #     --> serve*
 #     --> .env
 #

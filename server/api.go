@@ -16,14 +16,16 @@ import (
 )
 
 type api struct {
-	users users.Users
-	chats chats.Chats
+	storage string
+	users   users.Users
+	chats   chats.Chats
 }
 
-func newAPI(db *sqlx.DB) http.Handler {
+func newAPI(db *sqlx.DB, storage http.Dir) http.Handler {
 	i := &api{
-		users: users.NewUsers(db),
-		chats: chats.NewChats(db),
+		storage: string(storage),
+		users:   users.NewUsers(db),
+		chats:   chats.NewChats(db),
 	}
 
 	rtr := mux.New()
@@ -48,6 +50,11 @@ func newAPI(db *sqlx.DB) http.Handler {
 		Methods(http.MethodGet).
 		HandleFunc(i.profile)
 
+	rtr.Subrouter().
+		Path("/avatar").
+		Methods(http.MethodGet).
+		HandleFunc(i.avatar)
+
 	return rtr
 }
 
@@ -70,7 +77,7 @@ func (db *api) signup(w http.ResponseWriter, r *http.Request) {
 	err = db.users.Add(user)
 	if err != nil {
 		log.Errorf("failed to add user %s: %s", user.Handle, err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusConflict)
 		fmt.Fprintf(w, "🙀 Looks like some opportunist came before you and has reserved the '%s' username. Try to come up with something else!",
 			user.Handle)
 		return
@@ -95,7 +102,7 @@ func (db *api) login(w http.ResponseWriter, r *http.Request) {
 	u, err := db.users.Get(user.Handle)
 	if err != nil {
 		log.Errorf("failed to access user's password info")
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "🙀 I looked through my records, and I couldn't find a user with username '%s' anywhere. Make sure you didn't make a typo!",
 			user.Handle)
 		return
@@ -131,7 +138,6 @@ func (db *api) listChats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Infof("user '%s' is requesting their chats list", handle)
-
 	db.getEncodeAndLog(w, func() (interface{}, error) {
 		return db.chats.GetForUser(handle)
 	})
@@ -146,8 +152,26 @@ func (db *api) profile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Infof("user '%s' is requesting their profile", handle)
-
 	db.getEncodeAndLog(w, func() (interface{}, error) {
 		return db.users.GetProfile(handle)
 	})
+}
+
+// avatar is expecting a request of the following form:
+//
+//     GET /api/avatar
+//
+// or
+//
+//     GET /api/avatar?handle=sharpvik
+//
+// The handle query parameter is optional. If it is not specified, we will try
+// to establish the user's identity via the JWT token wrapped in a cookie (if it
+// even exists at all).
+func (db *api) avatar(w http.ResponseWriter, r *http.Request) {
+	if handle := r.URL.Query().Get("handle"); handle != "" {
+		db.avatarForUser(w, r, handle)
+	} else {
+		db.avatarFromUserToken(w, r)
+	}
 }

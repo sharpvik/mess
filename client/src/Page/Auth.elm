@@ -110,7 +110,7 @@ expectResponseMessage toMsg =
                     Ok message
 
                 _ ->
-                    Err "Something went terribly wrong... I'll try to fix it."
+                    Err "Something went terribly wrong... I'll try to fix it. Meanwhile, check your internet connection just in case!"
 
 
 

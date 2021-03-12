@@ -13,7 +13,8 @@ POSTGRES_PASSWORD={password}
 POSTGRES_DB=mess
 POSTGRES_MIGRATIONS=migrations
 
-CLIENT_DIR=client/dist
+CLIENT_DIST_DIR=client/dist
+STORAGE_DIR=storage
 
 JWT_SIGNING_KEY={jwt_signing_key}
 """

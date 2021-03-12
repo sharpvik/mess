@@ -1,7 +1,9 @@
 package configs
 
 import (
+	"io/fs"
 	"net/http"
+	"os"
 
 	"github.com/sharpvik/log-go"
 
@@ -9,14 +11,16 @@ import (
 )
 
 type Server struct {
-	PublicDir http.Dir
-	DevMode   bool
+	DistDir    fs.FS
+	StorageDir http.Dir
+	DevMode    bool
 }
 
 func mustInitServer() Server {
 	log.Debug("config server")
 	return Server{
-		PublicDir: http.Dir(env.MustGet("CLIENT_DIR")),
-		DevMode:   parseFlags(),
+		DistDir:    os.DirFS(env.MustGet("CLIENT_DIST_DIR")),
+		StorageDir: http.Dir(env.MustGet("STORAGE_DIR")),
+		DevMode:    parseFlags(),
 	}
 }

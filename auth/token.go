@@ -44,7 +44,7 @@ func TokenFromRequestCookie(r *http.Request) (
 
 	cookie, err := r.Cookie(CookieName)
 	if err != nil {
-		err = fmt.Errorf("unauthorised request to get chats: %s", err)
+		err = fmt.Errorf("jwt token cookie not found: %s", err)
 		status = http.StatusUnauthorized
 		return
 	}
@@ -52,13 +52,13 @@ func TokenFromRequestCookie(r *http.Request) (
 	token, err = SignedToken(cookie.Value).ParseToken()
 	if err != nil {
 		err = fmt.Errorf(
-			"unauthorised request to get chats: invaild token: %s", err)
+			"unauthorised request: invaild token: %s", err)
 		status = http.StatusUnauthorized
 		return
 	}
 
 	if !token.Valid {
-		err = fmt.Errorf("unauthorised request to get chats: invaild token")
+		err = fmt.Errorf("unauthorised request: invaild token")
 		status = http.StatusUnauthorized
 		return
 	}

@@ -45,15 +45,7 @@ type Model
 
 toKey : Model -> Nav.Key
 toKey model =
-    case toSession model of
-        Session.Guest key ->
-            key
-
-        Session.User key _ ->
-            key
-
-        Session.DidNotCheckYet key ->
-            key
+    model |> toSession |> Session.toKey
 
 
 toSession : Model -> Session

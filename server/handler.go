@@ -2,40 +2,38 @@ package server
 
 import (
 	"net/http"
-	"path"
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/mess/configs"
 	"github.com/sharpvik/mux"
 )
 
-func newServerHandler(publicDir http.Dir, db *sqlx.DB) http.Handler {
+func newServerHandler(config configs.Server, db *sqlx.DB) http.Handler {
 	rtr := mux.New()
 
 	// API.
 	rtr.Subrouter().
 		PathPrefix("/api").
 		// Methods may vary and are defined by the API handler.
-		Handler(newAPI(db))
+		Handler(newAPI(db, config.StorageDir))
 
 	// Virtual routing in Elm.
 	rtr.Subrouter().
+		UseFunc(logRequest).
 		PathPrefix("/@").
 		Methods(http.MethodGet).
-		HandleFunc(index(string(publicDir)))
+		HandleFunc(index(config.DistDir))
 
 	// Everything else goes to the file server.
 	rtr.Subrouter().
 		Methods(http.MethodGet).
-		Handler(http.FileServer(publicDir))
+		Handler(http.FileServer(http.FS(config.DistDir)))
 
 	return rtr
 }
 
-// index sends client's index.html file in response to every request that starts
-// with /@ (which signifies that this is an internal Elm routing URL).
-func index(publicDir string) mux.View {
-	return func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, path.Join(publicDir, "index.html"))
-	}
+func logRequest(_ http.ResponseWriter, r *http.Request) {
+	log.Infof("%s %s", r.Method, r.URL.String())
 }

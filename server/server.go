@@ -26,7 +26,7 @@ type Server struct {
 func NewServer(config configs.Server, db *sqlx.DB) (s *Server) {
 	s = NewBasicServer()
 	s.setMode(config.DevMode)
-	s.server.Handler = newServerHandler(config.PublicDir, db)
+	s.server.Handler = newServerHandler(config, db)
 	return
 }
 

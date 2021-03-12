@@ -38,7 +38,8 @@ view session =
         Session.User _ info ->
             withTopbar
                 [ div [ class "passage" ]
-                    [ h1 [] [ text info.name ]
+                    [ img [ src Location.apiAvatar ] []
+                    , h1 [] [ text info.name ]
                     , p []
                         [ text "Let me guess, your nickname is "
                         , span [ class "inhi" ] [ text info.handle ]
