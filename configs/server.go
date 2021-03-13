@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/log-go/v2"
 
 	"github.com/sharpvik/mess/env"
 )

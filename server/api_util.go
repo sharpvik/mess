@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/log-go/v2"
 	"github.com/sharpvik/mess/auth"
 )
 

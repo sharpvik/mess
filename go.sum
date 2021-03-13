@@ -18,8 +18,8 @@ github.com/mattn/go-sqlite3 v1.14.6 h1:dNPt6NO46WmLVt2DLNpwczCmdV5boIZ6g/tlDrlRU
 github.com/mattn/go-sqlite3 v1.14.6/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/sharpvik/log-go v1.0.0 h1:OlrkHDWtFOGjX14xXOc5fld2279+4ROzRbs10SQ5+C0=
-github.com/sharpvik/log-go v1.0.0/go.mod h1:JuzBzWDrtJEBUrtjh8efT2CE2Z0C7Z+CrkBO1GUPqnI=
+github.com/sharpvik/log-go/v2 v2.0.1 h1:97xDh4VLmwOiX20RIjowq8/ztlS8rX5GShRBcAOLbLU=
+github.com/sharpvik/log-go/v2 v2.0.1/go.mod h1:MNqw59GNFR7DRy0GnYU6KvzoZbBdCpxRULS/AG6eyIo=
 github.com/sharpvik/mux v0.2.0 h1:vTfO5d185P0ifKQXx89klZ1SLTh//HPi7CndAaRQnPw=
 github.com/sharpvik/mux v0.2.0/go.mod h1:Tr9AHqpRSxcBQscr/RK7nYuJOI0XXDOGugJC7k6K1bI=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

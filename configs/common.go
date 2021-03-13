@@ -3,7 +3,7 @@ package configs
 import (
 	"flag"
 
-	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/log-go/v2"
 )
 
 // Config contains configuration information for the whole app.

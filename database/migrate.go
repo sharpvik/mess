@@ -7,7 +7,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // the DB driver
-	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/log-go/v2"
 
 	"github.com/sharpvik/mess/configs"
 	"github.com/sharpvik/mess/migrations"

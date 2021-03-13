@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/log-go/v2"
 
 	"github.com/sharpvik/mux"
 )
