@@ -55,6 +55,11 @@ func newAPI(db *sqlx.DB, storage http.Dir) http.Handler {
 		Methods(http.MethodGet).
 		HandleFunc(i.avatar)
 
+	rtr.Subrouter().
+		Path("/logout").
+		Methods(http.MethodGet).
+		HandleFunc(logout)
+
 	return rtr
 }
 
@@ -174,4 +179,8 @@ func (db *api) avatar(w http.ResponseWriter, r *http.Request) {
 	} else {
 		db.avatarFromUserToken(w, r)
 	}
+}
+
+func logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, auth.EmptyCookie())
 }

@@ -34,5 +34,6 @@ func (u *users) GetProfile(handle string) (profile *Profile, err error) {
 	if err != nil {
 		return
 	}
-	return newProfile(user), nil
+	profile = newProfile(user)
+	return
 }

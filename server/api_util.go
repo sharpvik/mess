@@ -22,6 +22,7 @@ func (db *api) getAndEncode(w http.ResponseWriter, getter Getter) (err error) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(data)
 	if err != nil {
 		err = fmt.Errorf("failed to encode: %s", err)

@@ -9,8 +9,6 @@ import (
 )
 
 const (
-	CookieName = "mess-jwt"
-
 	year             = time.Hour * 24 * 365
 	issuer           = "mess-admin-issuer"
 	envJWTSigningKey = "JWT_SIGNING_KEY"
