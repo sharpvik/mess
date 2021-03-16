@@ -13,13 +13,17 @@ import Route exposing (AuthCase)
 
 
 
--- TYPES
+-- MODEL
 
 
 type Model
     = Signup UserSignupData
     | Login UserLoginData
     | AuthResult AuthCase (Maybe (Result String String))
+
+
+
+-- MSG
 
 
 type Msg
@@ -229,6 +233,10 @@ view model =
                             Elements.buttonLink Location.login "Try Again"
                     ]
                 ]
+
+
+
+-- INPUT DATA
 
 
 type alias UserSignupData =
