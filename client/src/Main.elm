@@ -10,6 +10,7 @@ import Http
 import Location
 import Page.Auth
 import Page.Home
+import Page.Logout
 import Page.Profile
 import Route exposing (Route)
 import Session exposing (Session)
@@ -41,6 +42,7 @@ type Model
     | Home Session
     | Signup Session Page.Auth.Model
     | Profile Session
+    | Logout Session Page.Logout.Model
 
 
 toKey : Model -> Nav.Key
@@ -63,6 +65,9 @@ toSession model =
         Profile session ->
             session
 
+        Logout session _ ->
+            session
+
 
 
 -- MSG
@@ -73,6 +78,7 @@ type Msg
     | LinkChanged Url
     | GotAuthMsg Page.Auth.Msg
     | GotSession (Result Http.Error Session.Info)
+    | GotLogoutMsg Page.Logout.Msg
 
 
 
@@ -140,6 +146,12 @@ mux route model =
                 -- ▼ or to Profile if user is logged in
                 ( Profile session, Cmd.none )
 
+        ( Route.Logout, _ ) ->
+            norm
+                (Logout session)
+                GotLogoutMsg
+                (Page.Logout.init session)
+
 
 
 -- VIEW
@@ -168,6 +180,9 @@ view model =
 
         Profile session ->
             Page.Profile.view session
+
+        Logout _ logoutModel ->
+            norm GotLogoutMsg (Page.Logout.view logoutModel)
 
 
 
@@ -215,6 +230,10 @@ update msg model =
 
                 Err _ ->
                     mux route <| Redirect (Session.Guest key) route
+
+        ( GotLogoutMsg logoutMsg, Logout session logoutModel ) ->
+            Page.Logout.update logoutMsg logoutModel
+                |> norm (Logout session) GotLogoutMsg
 
         _ ->
             ( model, Cmd.none )

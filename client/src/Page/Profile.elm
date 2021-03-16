@@ -11,8 +11,12 @@ import Session exposing (Session)
 view : Session -> Document msg
 view session =
     let
+        topbar =
+            Elements.topbarWithRightSide "Profile" <|
+                div [] [ a [ href Location.logout ] [ text "Log Out" ] ]
+
         withTopbar body =
-            doc <| Elements.topbar "Profile" :: body
+            doc <| topbar :: body
 
         doc body =
             { title = "Profile @Mess"

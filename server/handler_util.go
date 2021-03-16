@@ -54,11 +54,10 @@ func makeReadSeekerFromFileFS(file fs.File) (rs io.ReadSeeker, err error) {
 		return
 	}
 	content := make([]byte, stat.Size())
-	n, err := file.Read(content)
+	_, err = file.Read(content)
 	if err != nil {
 		return
 	}
-	log.Debugf("read %d bytes from file", n)
 	rs = bytes.NewReader(content)
 	return
 }

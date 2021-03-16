@@ -36,3 +36,8 @@ buttonLink ref txt =
 buttonLinkWithOnClick : String -> msg -> Html msg
 buttonLinkWithOnClick txt action =
     a [ class "button", onClick action ] [ text txt ]
+
+
+passage : List (Html msg) -> Html msg
+passage =
+    div [ class "passage" ]

@@ -12,6 +12,7 @@ type Route
     = Home
     | Auth AuthCase
     | Profile
+    | Logout
 
 
 type AuthCase
@@ -33,6 +34,7 @@ urlParser =
         , map (Auth Signup) <| at </> s "signup"
         , map (Auth Login) <| at </> s "login"
         , map Home <| at </> s "home"
+        , map Logout <| at </> s "logout"
         ]
 
 

@@ -5,7 +5,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/sharpvik/log-go/v2"
 	"github.com/sharpvik/mess/configs"
 	"github.com/sharpvik/mux"
 )
@@ -21,7 +20,6 @@ func newServerHandler(config configs.Server, db *sqlx.DB) http.Handler {
 
 	// Virtual routing in Elm.
 	rtr.Subrouter().
-		UseFunc(logRequest).
 		PathPrefix("/@").
 		Methods(http.MethodGet).
 		HandleFunc(index(config.DistDir))
@@ -32,8 +30,4 @@ func newServerHandler(config configs.Server, db *sqlx.DB) http.Handler {
 		Handler(http.FileServer(http.FS(config.DistDir)))
 
 	return rtr
-}
-
-func logRequest(_ http.ResponseWriter, r *http.Request) {
-	log.Infof("%s %s", r.Method, r.URL.String())
 }

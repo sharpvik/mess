@@ -2,10 +2,12 @@ module Location exposing
     ( Dest
     , apiAvatar
     , apiLogin
+    , apiLogout
     , apiProfile
     , apiSignup
     , home
     , login
+    , logout
     , profile
     , repo
     , signup
@@ -56,6 +58,11 @@ apiAvatar =
     api "avatar"
 
 
+apiLogout : Dest
+apiLogout =
+    api "logout"
+
+
 
 -- INTERNAL
 
@@ -83,3 +90,8 @@ login =
 profile : Dest
 profile =
     at [ "profile" ]
+
+
+logout : Dest
+logout =
+    at [ "logout" ]
