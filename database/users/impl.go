@@ -37,3 +37,12 @@ func (u *users) GetProfile(handle string) (profile *Profile, err error) {
 	profile = newProfile(user)
 	return
 }
+
+func (u *users) UpdateProfile(handle string, update *User) (err error) {
+	_, err = u.db.Exec(
+		`UPDATE users 
+		SET handle = $1, name = $2, hash = $3, salt = $4
+		WHERE handle = $5`,
+		update.Handle, update.Name, update.Password, update.Salt, handle)
+	return
+}

@@ -61,3 +61,9 @@ func makeReadSeekerFromFileFS(file fs.File) (rs io.ReadSeeker, err error) {
 	rs = bytes.NewReader(content)
 	return
 }
+
+func logRequest(pathPrefix string) mux.View {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Infof("%s %s%s", r.Method, pathPrefix, r.URL.String())
+	}
+}

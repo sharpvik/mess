@@ -14,6 +14,13 @@ type Profile struct {
 	Name   string `json:"name"`
 }
 
+// ProfileUpdate for user.
+type ProfileUpdate struct {
+	Handle   string `json:"handle"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
 func newProfile(user *User) *Profile {
 	return &Profile{
 		Handle: user.Handle,

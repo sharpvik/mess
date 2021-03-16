@@ -30,37 +30,33 @@ func newAPI(db *sqlx.DB, storage http.Dir) http.Handler {
 
 	rtr := mux.New()
 
+	// General.
 	rtr.Subrouter().
 		Path("/signup").
 		Methods(http.MethodPost).
 		HandleFunc(i.signup)
 
+	// General.
 	rtr.Subrouter().
 		Path("/login").
 		Methods(http.MethodPost).
 		HandleFunc(i.login)
 
+	// Auth-dependent.
 	rtr.Subrouter().
-		Path("/chats").
-		Methods(http.MethodGet).
-		HandleFunc(i.listChats)
-
-	rtr.Subrouter().
-		Path("/profile").
-		Methods(http.MethodGet).
-		HandleFunc(i.profile)
-
-	rtr.Subrouter().
-		Path("/avatar").
-		Methods(http.MethodGet).
-		HandleFunc(i.avatar)
-
-	rtr.Subrouter().
-		Path("/logout").
-		Methods(http.MethodGet).
-		HandleFunc(logout)
+		UseFunc(auth.Auth).
+		HandleFunc(i.splitStreamByAuth)
 
 	return rtr
+}
+
+func (db *api) splitStreamByAuth(w http.ResponseWriter, r *http.Request) {
+	handle, err := auth.IsAuth(r)
+	if err != nil {
+		http.NotFound(w, r)
+	} else {
+		db.newAuthorizedHandler(handle).ServeHTTP(w, r)
+	}
 }
 
 func (db *api) signup(w http.ResponseWriter, r *http.Request) {
@@ -132,55 +128,4 @@ func (db *api) login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, token.WrapInCookie())
 	log.Info("login request approved")
 	fmt.Fprintf(w, "🤠 Welcome back, %s!", u.Name)
-}
-
-func (db *api) listChats(w http.ResponseWriter, r *http.Request) {
-	handle, status, err := auth.UserHandleFromRequestCookie(r)
-	if err != nil {
-		log.Error(err)
-		w.WriteHeader(status)
-		return
-	}
-
-	log.Infof("user '%s' is requesting their chats list", handle)
-	db.getEncodeAndLog(w, func() (interface{}, error) {
-		return db.chats.GetForUser(handle)
-	})
-}
-
-func (db *api) profile(w http.ResponseWriter, r *http.Request) {
-	handle, status, err := auth.UserHandleFromRequestCookie(r)
-	if err != nil {
-		log.Error(err)
-		w.WriteHeader(status)
-		return
-	}
-
-	log.Infof("user '%s' is requesting their profile", handle)
-	db.getEncodeAndLog(w, func() (interface{}, error) {
-		return db.users.GetProfile(handle)
-	})
-}
-
-// avatar is expecting a request of the following form:
-//
-//     GET /api/avatar
-//
-// or
-//
-//     GET /api/avatar?handle=sharpvik
-//
-// The handle query parameter is optional. If it is not specified, we will try
-// to establish the user's identity via the JWT token wrapped in a cookie (if it
-// even exists at all).
-func (db *api) avatar(w http.ResponseWriter, r *http.Request) {
-	if handle := r.URL.Query().Get("handle"); handle != "" {
-		db.avatarForUser(w, r, handle)
-	} else {
-		db.avatarFromUserToken(w, r)
-	}
-}
-
-func logout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, auth.EmptyCookie())
 }

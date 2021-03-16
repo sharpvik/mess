@@ -4,16 +4,22 @@ import (
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
-
-	"github.com/sharpvik/mess/configs"
 	"github.com/sharpvik/mux"
+
+	"github.com/sharpvik/mess/auth"
+	"github.com/sharpvik/mess/configs"
 )
 
+// newServerHandler returns the main server handler responsible for the API, and
+// static assets delivery.
 func newServerHandler(config configs.Server, db *sqlx.DB) http.Handler {
 	rtr := mux.New()
 
-	// API.
+	// API has to know whether this request comes from a Guest or an
+	// authenticated user. Hence, why we use auth.Auth middleware.
 	rtr.Subrouter().
+		UseFunc(auth.Auth).
+		UseFunc(logRequest("/api")).
 		PathPrefix("/api").
 		// Methods may vary and are defined by the API handler.
 		Handler(newAPI(db, config.StorageDir))
