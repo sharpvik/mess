@@ -30,19 +30,16 @@ func newAPI(db *sqlx.DB, storage http.Dir) http.Handler {
 
 	rtr := mux.New()
 
-	// General.
 	rtr.Subrouter().
 		Path("/signup").
 		Methods(http.MethodPost).
 		HandleFunc(i.signup)
 
-	// General.
 	rtr.Subrouter().
 		Path("/login").
 		Methods(http.MethodPost).
 		HandleFunc(i.login)
 
-	// Auth-dependent.
 	rtr.Subrouter().
 		UseFunc(auth.Auth).
 		HandleFunc(i.splitStreamByAuth)
@@ -51,17 +48,22 @@ func newAPI(db *sqlx.DB, storage http.Dir) http.Handler {
 }
 
 func (db *api) splitStreamByAuth(w http.ResponseWriter, r *http.Request) {
-	handle, err := auth.IsAuth(r)
-	if err != nil {
-		http.NotFound(w, r)
-	} else {
+	if handle, err := auth.IsAuth(r); err == nil {
 		db.newAuthorizedHandler(handle).ServeHTTP(w, r)
+	} else {
+		unauthorizedHandler(w, r)
 	}
 }
 
 func (db *api) signup(w http.ResponseWriter, r *http.Request) {
 	user := new(users.User)
-	json.NewDecoder(r.Body).Decode(user)
+	err := json.NewDecoder(r.Body).Decode(user)
+	if err != nil {
+		log.Errorf("failed to add user: unable to decode JSON: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "🙀 I can't decode the data you sent. It is not your fault, simply notify one of our developers about it!")
+		return
+	}
 
 	log.Infof("adding new user %s ...", user.Handle)
 

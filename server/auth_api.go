@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/sharpvik/log-go/v2"
@@ -74,6 +75,7 @@ func (db *authorizedAPI) updateProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Errorf("failed to update profile: %s", err)
 		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "🙀 I can't decode the data you sent. It is not your fault, simply notify one of our developers about it!")
 		return
 	}
 
@@ -81,6 +83,7 @@ func (db *authorizedAPI) updateProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Errorf("failed to update profile: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "🙀 For some reason, I can't encrypt your password, but it has to be done for security purposes. Please, try to fill in the form again!")
 		return
 	}
 
@@ -95,8 +98,12 @@ func (db *authorizedAPI) updateProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Errorf("failed to update profile: %s", err)
 		w.WriteHeader(http.StatusConflict)
+		fmt.Fprint(w, "🙀 Our database did not like your update request. Most likely, you tried chaning your username to an already existing one. Please try again.")
 		return
 	}
+
+	log.Infof("successfully updated user info for user '%s'", user.Handle)
+	fmt.Fprintf(w, "🤠 I'm loving these new vibes, %s!", user.Name)
 }
 
 func (db *authorizedAPI) avatar(w http.ResponseWriter, r *http.Request) {

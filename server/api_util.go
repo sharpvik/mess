@@ -11,3 +11,7 @@ func (db *api) avatarForUser(w http.ResponseWriter, r *http.Request, handle stri
 	log.Infof("user '%s' is requesting their avatar", handle)
 	http.ServeFile(w, r, path.Join(db.storage, "defaults", "avatar.jpg"))
 }
+
+func unauthorizedHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusUnauthorized)
+}

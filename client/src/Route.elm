@@ -1,4 +1,9 @@
-module Route exposing (AuthCase(..), Route(..), fromUrl)
+module Route exposing
+    ( AuthCase(..)
+    , ProfileCase(..)
+    , Route(..)
+    , fromUrl
+    )
 
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, map, oneOf, s)
@@ -11,13 +16,18 @@ type alias UrlParser a =
 type Route
     = Home
     | Auth AuthCase
-    | Profile
+    | Profile ProfileCase
     | Logout
 
 
 type AuthCase
     = Signup
     | Login
+
+
+type ProfileCase
+    = ViewProfile
+    | EditProfile
 
 
 at : Parser a a
@@ -28,9 +38,10 @@ at =
 urlParser : UrlParser a
 urlParser =
     oneOf
-        [ map Profile Parser.top
-        , map Profile at -- this duplication is due to virtual routing
-        , map Profile <| at </> s "profile"
+        [ map (Profile ViewProfile) Parser.top
+        , map (Profile ViewProfile) at -- this duplication is due to virtual routing
+        , map (Profile ViewProfile) <| at </> s "profile"
+        , map (Profile EditProfile) <| at </> s "profile" </> s "edit"
         , map (Auth Signup) <| at </> s "signup"
         , map (Auth Login) <| at </> s "login"
         , map Home <| at </> s "home"

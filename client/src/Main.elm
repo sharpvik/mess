@@ -41,7 +41,7 @@ type Model
     = Redirect Session Route
     | Home Session
     | Signup Session Page.Auth.Model
-    | Profile Session
+    | Profile Session Page.Profile.Model
     | Logout Session Page.Logout.Model
 
 
@@ -62,7 +62,7 @@ toSession model =
         Signup session _ ->
             session
 
-        Profile session ->
+        Profile session _ ->
             session
 
         Logout session _ ->
@@ -79,6 +79,7 @@ type Msg
     | GotAuthMsg Page.Auth.Msg
     | GotSession (Result Http.Error Session.Info)
     | GotLogoutMsg Page.Logout.Msg
+    | GotProfileMsg Page.Profile.Msg
 
 
 
@@ -108,18 +109,6 @@ mux route model =
 
         session =
             toSession model
-
-        -- We need this function because basic redirections trough recursive
-        -- calls to mux leave browser URL unattended, which is improper.
-        redirectToRouteIfNotLoggedIn redirectLocation loggedIn =
-            case session of
-                Session.User _ _ ->
-                    loggedIn
-
-                _ ->
-                    ( model
-                    , Nav.pushUrl (toKey model) redirectLocation
-                    )
     in
     case ( route, session ) of
         ( _, Session.DidNotCheckYet _ ) ->
@@ -139,12 +128,8 @@ mux route model =
                 GotAuthMsg
                 (Page.Auth.init subRoute)
 
-        ( Route.Profile, _ ) ->
-            redirectToRouteIfNotLoggedIn
-                Location.home
-                -- ▲ redirecting Home if user is just a guest
-                -- ▼ or to Profile if user is logged in
-                ( Profile session, Cmd.none )
+        ( Route.Profile subRoute, _ ) ->
+            norm (Profile session) GotProfileMsg (Page.Profile.init session subRoute)
 
         ( Route.Logout, _ ) ->
             norm
@@ -176,13 +161,13 @@ view model =
             Page.Home.view session
 
         Signup _ signupModel ->
-            norm GotAuthMsg (Page.Auth.view signupModel)
+            norm GotAuthMsg <| Page.Auth.view signupModel
 
-        Profile session ->
-            Page.Profile.view session
+        Profile _ profileModel ->
+            norm GotProfileMsg <| Page.Profile.view profileModel
 
         Logout _ logoutModel ->
-            norm GotLogoutMsg (Page.Logout.view logoutModel)
+            norm GotLogoutMsg <| Page.Logout.view logoutModel
 
 
 
@@ -234,6 +219,10 @@ update msg model =
         ( GotLogoutMsg logoutMsg, Logout session logoutModel ) ->
             Page.Logout.update logoutMsg logoutModel
                 |> norm (Logout session) GotLogoutMsg
+
+        ( GotProfileMsg profileMsg, Profile session profileModel ) ->
+            Page.Profile.update profileMsg profileModel
+                |> norm (Profile session) GotProfileMsg
 
         _ ->
             ( model, Cmd.none )

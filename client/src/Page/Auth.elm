@@ -60,12 +60,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
         ( SignupFormKeyDown field str, Signup data ) ->
-            ( updateUserSignupDataWith data field str |> Signup
+            ( Signup <| updateUserSignupDataWith data field str
             , Cmd.none
             )
 
         ( LoginFormKeyDown field str, Login data ) ->
-            ( updateUserLoginDataWith data field str |> Login
+            ( Login <| updateUserLoginDataWith data field str
             , Cmd.none
             )
 

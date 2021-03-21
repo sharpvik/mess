@@ -5,6 +5,6 @@ create table if not exists messages (
     date date not null,
     time time not null,
     text varchar(1000) not null,
-    constraint fk_author foreign key (author) references users(handle),
+    constraint fk_author foreign key (author) references users(handle) on delete restrict on update cascade,
     constraint fk_chat foreign key (chat) references chats(id) on delete cascade
 );

@@ -9,6 +9,7 @@ module Location exposing
     , login
     , logout
     , profile
+    , profileEdit
     , repo
     , signup
     )
@@ -90,6 +91,11 @@ login =
 profile : Dest
 profile =
     at [ "profile" ]
+
+
+profileEdit : Dest
+profileEdit =
+    at [ "profile", "edit" ]
 
 
 logout : Dest
