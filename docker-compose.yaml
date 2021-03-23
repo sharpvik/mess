@@ -21,3 +21,11 @@ services:
       - .env
     ports:
       - 5432:5432
+
+  ava:
+    container_name: mess_ava
+    image: sharpvik/ava:latest
+    env_file:
+      - .env
+    ports:
+      - 42069:42069

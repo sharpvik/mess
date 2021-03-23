@@ -7,22 +7,20 @@ import (
 )
 
 type Database struct {
-	Host       string
-	Port       string
-	User       string
-	Password   string
-	Name       string
-	Migrations string
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
 }
 
 func mustInitDB() Database {
 	log.Debug("config database")
 	return Database{
-		Host:       env.MustGet("POSTGRES_HOST"),
-		Port:       env.MustGet("POSTGRES_PORT"),
-		User:       env.MustGet("POSTGRES_USER"),
-		Password:   env.MustGet("POSTGRES_PASSWORD"),
-		Name:       env.MustGet("POSTGRES_DB"),
-		Migrations: env.MustGet("POSTGRES_MIGRATIONS"),
+		Host:     env.MustGet("POSTGRES_HOST"),
+		Port:     env.MustGet("POSTGRES_PORT"),
+		User:     env.MustGet("POSTGRES_USER"),
+		Password: env.MustGet("POSTGRES_PASSWORD"),
+		Name:     env.MustGet("POSTGRES_DB"),
 	}
 }

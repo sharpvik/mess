@@ -22,7 +22,7 @@ func newServerHandler(config configs.Server, db *sqlx.DB) http.Handler {
 		UseFunc(logRequest("/api")).
 		PathPrefix("/api").
 		// Methods may vary and are defined by the API handler.
-		Handler(newAPI(db, config.StorageDir))
+		Handler(newAPI(db))
 
 	// Virtual routing in Elm.
 	rtr.Subrouter().

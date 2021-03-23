@@ -16,16 +16,14 @@ import (
 )
 
 type api struct {
-	storage string
-	users   users.Users
-	chats   chats.Chats
+	users users.Users
+	chats chats.Chats
 }
 
-func newAPI(db *sqlx.DB, storage http.Dir) http.Handler {
+func newAPI(db *sqlx.DB) http.Handler {
 	i := &api{
-		storage: string(storage),
-		users:   users.NewUsers(db),
-		chats:   chats.NewChats(db),
+		users: users.NewUsers(db),
+		chats: chats.NewChats(db),
 	}
 
 	rtr := mux.New()
