@@ -2,38 +2,38 @@ package server
 
 import (
 	"net/http"
-	"path"
 
 	"github.com/jmoiron/sqlx"
-
 	"github.com/sharpvik/mux"
+
+	"github.com/sharpvik/mess/auth"
+	"github.com/sharpvik/mess/configs"
 )
 
-func newServerHandler(publicDir http.Dir, db *sqlx.DB) http.Handler {
+// newServerHandler returns the main server handler responsible for the API, and
+// static assets delivery.
+func newServerHandler(config configs.Server, db *sqlx.DB) http.Handler {
 	rtr := mux.New()
 
+	// API has to know whether this request comes from a Guest or an
+	// authenticated user. Hence, why we use auth.Auth middleware.
 	rtr.Subrouter().
+		UseFunc(auth.Auth).
+		UseFunc(logRequest("/api")).
 		PathPrefix("/api").
 		// Methods may vary and are defined by the API handler.
 		Handler(newAPI(db))
 
+	// Virtual routing in Elm.
 	rtr.Subrouter().
 		PathPrefix("/@").
 		Methods(http.MethodGet).
-		HandleFunc(index(string(publicDir)))
+		HandleFunc(index(config.DistDir))
 
 	// Everything else goes to the file server.
 	rtr.Subrouter().
 		Methods(http.MethodGet).
-		Handler(http.FileServer(publicDir))
+		Handler(http.FileServer(http.FS(config.DistDir)))
 
 	return rtr
-}
-
-// index sends client's index.html file in response to every request that starts
-// with /@ (which signifies that this is an internal Elm routing URL).
-func index(publicDir string) mux.View {
-	return func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, path.Join(publicDir, "index.html"))
-	}
 }

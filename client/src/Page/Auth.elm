@@ -1,6 +1,7 @@
 module Page.Auth exposing (..)
 
 import Browser exposing (Document, UrlRequest(..))
+import Browser.Navigation as Nav
 import Elements
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -9,6 +10,32 @@ import Http
 import Json.Encode as Encode
 import Location
 import Route exposing (AuthCase)
+
+
+
+-- MODEL
+
+
+type Model
+    = Signup UserSignupData
+    | Login UserLoginData
+    | AuthResult AuthCase (Maybe (Result String String))
+
+
+
+-- MSG
+
+
+type Msg
+    = SignupFormKeyDown SignupFormField String
+    | FormSubmit AuthCase Encode.Value
+    | LoginFormKeyDown LoginFormField String
+    | GotAuthResult AuthCase (Result String String)
+    | Reload
+
+
+
+-- INIT
 
 
 init : AuthCase -> ( Model, Cmd Msg )
@@ -26,23 +53,6 @@ init auth =
 
 
 
--- TYPES
-
-
-type Model
-    = Signup UserSignupData
-    | Login UserLoginData
-    | AuthResult AuthCase (Maybe (Result String String))
-
-
-type Msg
-    = SignupFormKeyDown SignupFormField String
-    | FormSubmit AuthCase Encode.Value
-    | LoginFormKeyDown LoginFormField String
-    | GotAuthResult AuthCase (Result String String)
-
-
-
 -- UPDATE
 
 
@@ -50,12 +60,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
         ( SignupFormKeyDown field str, Signup data ) ->
-            ( updateUserSignupDataWith data field str |> Signup
+            ( Signup <| updateUserSignupDataWith data field str
             , Cmd.none
             )
 
         ( LoginFormKeyDown field str, Login data ) ->
-            ( updateUserLoginDataWith data field str |> Login
+            ( Login <| updateUserLoginDataWith data field str
             , Cmd.none
             )
 
@@ -70,7 +80,6 @@ update msg model =
                             Location.apiLogin
             in
             ( AuthResult authCase Nothing
-              -- expecting response from server
             , Http.post
                 { url = dest
                 , body = Http.jsonBody json
@@ -83,6 +92,9 @@ update msg model =
             ( AuthResult authCase <| Just result
             , Cmd.none
             )
+
+        ( Reload, _ ) ->
+            ( model, Nav.load Location.profile )
 
         ( _, _ ) ->
             ( model, Cmd.none )
@@ -102,16 +114,7 @@ expectResponseMessage toMsg =
                     Ok message
 
                 _ ->
-                    Err "Something went terribly wrong... I'll try to fix it."
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+                    Err "Something went terribly wrong... I'll try to fix it. Meanwhile, check your internet connection just in case!"
 
 
 
@@ -121,33 +124,31 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     let
-        topbar =
-            Elements.topbarWithRightSide "Auth" <|
-                a [ href Location.home ] [ text "Home" ]
+        withTopbar =
+            (::) <|
+                Elements.topbarWithRightSide "Auth" <|
+                    a [ href Location.home ] [ text "Home" ]
 
-        handleInput val onIn =
+        requiredInputField type__ name_ placeholder_ maxLength val onIn =
             input
-                [ type_ "text"
-                , name "handle"
-                , placeholder "Username"
+                [ type_ type__
+                , name name_
+                , placeholder placeholder_
                 , required True
                 , value val
-                , maxlength 100
+                , maxlength maxLength
                 , onInput onIn
                 ]
                 []
 
-        passwordInput val onIn =
-            input
-                [ type_ "password"
-                , name "password"
-                , placeholder "Password"
-                , required True
-                , value val
-                , maxlength 64
-                , onInput onIn
-                ]
-                []
+        handleInput =
+            requiredInputField "text" "handle" "Username" 100
+
+        nameInput =
+            requiredInputField "text" "name" "Your Name" 100
+
+        passwordInput =
+            requiredInputField "password" "password" "Password" 64
 
         submitButton =
             div []
@@ -157,55 +158,50 @@ view model =
                     ]
                     [ text "Submit" ]
                 ]
+
+        doc body =
+            { title = "Auth @Mess"
+            , body = body
+            }
     in
-    { title = "Auth @Mess"
-    , body =
+    doc <|
         case model of
             Signup data ->
-                [ topbar
-                , div [ class "creds-form-container" ]
-                    [ div [ class "tabs" ]
-                        [ a [ href Location.signup, class "tab active" ] [ text "Sign Up" ]
-                        , a [ href Location.login, class "tab" ] [ text "Log In" ]
-                        ]
-                    , Html.form
-                        [ class "creds-form"
-                        , onSubmit (FormSubmit Route.Signup (jsonEncodeUserSignupData data))
-                        ]
-                        [ handleInput data.handle (SignupFormKeyDown SignupHandle)
-                        , input
-                            [ type_ "text"
-                            , name "name"
-                            , placeholder "Your Name"
-                            , required True
-                            , value data.name
-                            , maxlength 100
-                            , onInput (SignupFormKeyDown SignupName)
+                withTopbar
+                    [ div [ class "creds-form-container" ]
+                        [ div [ class "tabs" ]
+                            [ a [ href Location.signup, class "tab active" ] [ text "Sign Up" ]
+                            , a [ href Location.login, class "tab" ] [ text "Log In" ]
                             ]
-                            []
-                        , passwordInput data.password (SignupFormKeyDown SignupPassword)
-                        , submitButton
+                        , Html.form
+                            [ class "creds-form"
+                            , onSubmit (FormSubmit Route.Signup (jsonEncodeUserSignupData data))
+                            ]
+                            [ handleInput data.handle (SignupFormKeyDown SignupHandle)
+                            , nameInput data.name (SignupFormKeyDown SignupName)
+                            , passwordInput data.password (SignupFormKeyDown SignupPassword)
+                            , submitButton
+                            ]
                         ]
                     ]
-                ]
 
             Login data ->
-                [ topbar
-                , div [ class "creds-form-container" ]
-                    [ div [ class "tabs" ]
-                        [ a [ href Location.signup, class "tab" ] [ text "Sign Up" ]
-                        , a [ href Location.login, class "tab active" ] [ text "Log In" ]
-                        ]
-                    , Html.form
-                        [ class "creds-form"
-                        , onSubmit (FormSubmit Route.Login (jsonEncodeUserLoginData data))
-                        ]
-                        [ handleInput data.handle (LoginFormKeyDown LoginHandle)
-                        , passwordInput data.password (LoginFormKeyDown LoginPassword)
-                        , submitButton
+                withTopbar
+                    [ div [ class "creds-form-container" ]
+                        [ div [ class "tabs" ]
+                            [ a [ href Location.signup, class "tab" ] [ text "Sign Up" ]
+                            , a [ href Location.login, class "tab active" ] [ text "Log In" ]
+                            ]
+                        , Html.form
+                            [ class "creds-form"
+                            , onSubmit (FormSubmit Route.Login (jsonEncodeUserLoginData data))
+                            ]
+                            [ handleInput data.handle (LoginFormKeyDown LoginHandle)
+                            , passwordInput data.password (LoginFormKeyDown LoginPassword)
+                            , submitButton
+                            ]
                         ]
                     ]
-                ]
 
             AuthResult _ Nothing ->
                 [ Elements.loader ]
@@ -219,7 +215,9 @@ view model =
                             Elements.buttonLink Location.login "Log In"
 
                         Route.Login ->
-                            Elements.buttonLink Location.home "Go Back"
+                            Elements.buttonLinkWithOnClick
+                                "See Your Profile"
+                                Reload
                     ]
                 ]
 
@@ -227,18 +225,18 @@ view model =
                 [ div [ class "passage" ]
                     [ h1 [] [ text "Failure..." ]
                     , p [] [ text message ]
-                    , Elements.buttonLink
-                        (case authCase of
-                            Route.Signup ->
-                                Location.signup
+                    , case authCase of
+                        Route.Signup ->
+                            Elements.buttonLink Location.login "Log In"
 
-                            Route.Login ->
-                                Location.login
-                        )
-                        "Try Again"
+                        Route.Login ->
+                            Elements.buttonLink Location.login "Try Again"
                     ]
                 ]
-    }
+
+
+
+-- INPUT DATA
 
 
 type alias UserSignupData =

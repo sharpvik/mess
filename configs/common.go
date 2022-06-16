@@ -1,10 +1,6 @@
 package configs
 
-import (
-	"flag"
-
-	"github.com/sharpvik/log-go"
-)
+import "github.com/sharpvik/log-go/v2"
 
 // Config contains configuration information for the whole app.
 type Config struct {
@@ -18,10 +14,4 @@ func MustInit() (config Config) {
 	config.Database = mustInitDB()
 	config.Server = mustInitServer()
 	return
-}
-
-func parseFlags() (dev bool) {
-	d := flag.Bool("dev", false, "run server in development mode")
-	flag.Parse()
-	return *d
 }

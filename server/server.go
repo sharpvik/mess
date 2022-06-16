@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/log-go/v2"
 
 	"github.com/sharpvik/mess/configs"
 )
@@ -26,7 +26,7 @@ type Server struct {
 func NewServer(config configs.Server, db *sqlx.DB) (s *Server) {
 	s = NewBasicServer()
 	s.setMode(config.DevMode)
-	s.server.Handler = newServerHandler(config.PublicDir, db)
+	s.server.Handler = newServerHandler(config, db)
 	return
 }
 

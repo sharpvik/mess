@@ -24,17 +24,16 @@ func NewSignedJWTTokenWithClaimsForUser(handle string) (SignedToken, error) {
 	return SignedToken(signed), err
 }
 
+func (st SignedToken) String() string {
+	return string(st)
+}
+
 func (st SignedToken) WrapInCookie() *http.Cookie {
-	return &http.Cookie{
-		Name:     CookieName,
-		Value:    string(st),
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	}
+	return cookieWithValue(st.String())
 }
 
 func (st SignedToken) ParseToken() (*jwt.Token, error) {
-	return jwt.ParseWithClaims(string(st), &Claims{}, keyFunc)
+	return jwt.ParseWithClaims(st.String(), &Claims{}, keyFunc)
 }
 
 func TokenFromRequestCookie(r *http.Request) (
@@ -42,9 +41,9 @@ func TokenFromRequestCookie(r *http.Request) (
 
 	status = http.StatusOK
 
-	cookie, err := r.Cookie(CookieName)
+	cookie, err := r.Cookie(cookieName)
 	if err != nil {
-		err = fmt.Errorf("unauthorised request to get chats: %s", err)
+		err = fmt.Errorf("'%s' cookie not found: %s", cookieName, err)
 		status = http.StatusUnauthorized
 		return
 	}
@@ -52,13 +51,13 @@ func TokenFromRequestCookie(r *http.Request) (
 	token, err = SignedToken(cookie.Value).ParseToken()
 	if err != nil {
 		err = fmt.Errorf(
-			"unauthorised request to get chats: invaild token: %s", err)
+			"unauthorised request: invaild token: %s", err)
 		status = http.StatusUnauthorized
 		return
 	}
 
 	if !token.Valid {
-		err = fmt.Errorf("unauthorised request to get chats: invaild token")
+		err = fmt.Errorf("unauthorised request: invaild token")
 		status = http.StatusUnauthorized
 		return
 	}

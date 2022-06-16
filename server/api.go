@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/log-go/v2"
 	"github.com/sharpvik/mux"
 
 	"github.com/sharpvik/mess/auth"
@@ -39,16 +39,29 @@ func newAPI(db *sqlx.DB) http.Handler {
 		HandleFunc(i.login)
 
 	rtr.Subrouter().
-		Path("/mychats").
-		Methods(http.MethodGet).
-		HandleFunc(i.myChats)
+		UseFunc(auth.Auth).
+		HandleFunc(i.splitStreamByAuth)
 
 	return rtr
 }
 
+func (db *api) splitStreamByAuth(w http.ResponseWriter, r *http.Request) {
+	if handle, err := auth.IsAuth(r); err == nil {
+		db.newAuthorizedHandler(handle).ServeHTTP(w, r)
+	} else {
+		unauthorizedHandler(w, r)
+	}
+}
+
 func (db *api) signup(w http.ResponseWriter, r *http.Request) {
 	user := new(users.User)
-	json.NewDecoder(r.Body).Decode(user)
+	err := json.NewDecoder(r.Body).Decode(user)
+	if err != nil {
+		log.Errorf("failed to add user: unable to decode JSON: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "🙀 I can't decode the data you sent. It is not your fault, simply notify one of our developers about it!")
+		return
+	}
 
 	log.Infof("adding new user %s ...", user.Handle)
 
@@ -65,7 +78,7 @@ func (db *api) signup(w http.ResponseWriter, r *http.Request) {
 	err = db.users.Add(user)
 	if err != nil {
 		log.Errorf("failed to add user %s: %s", user.Handle, err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusConflict)
 		fmt.Fprintf(w, "🙀 Looks like some opportunist came before you and has reserved the '%s' username. Try to come up with something else!",
 			user.Handle)
 		return
@@ -90,7 +103,7 @@ func (db *api) login(w http.ResponseWriter, r *http.Request) {
 	u, err := db.users.Get(user.Handle)
 	if err != nil {
 		log.Errorf("failed to access user's password info")
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "🙀 I looked through my records, and I couldn't find a user with username '%s' anywhere. Make sure you didn't make a typo!",
 			user.Handle)
 		return
@@ -115,30 +128,4 @@ func (db *api) login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, token.WrapInCookie())
 	log.Info("login request approved")
 	fmt.Fprintf(w, "🤠 Welcome back, %s!", u.Name)
-}
-
-func (db *api) myChats(w http.ResponseWriter, r *http.Request) {
-	token, status, err := auth.TokenFromRequestCookie(r)
-	if err != nil {
-		log.Error(err)
-		w.WriteHeader(status)
-		return
-	}
-
-	handle := token.Claims.(*auth.Claims).UserHandle
-	log.Infof("user '%s' is requesting their chats list", handle)
-
-	mychats, err := db.chats.GetForUser(handle)
-	if err != nil {
-		log.Errorf("failed to get user chats: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	err = json.NewEncoder(w).Encode(mychats)
-	if err != nil {
-		log.Errorf("failed to stringify user chats: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 }

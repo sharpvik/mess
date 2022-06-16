@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/log-go/v2"
 )
 
 func MustGet(key string) (val string) {

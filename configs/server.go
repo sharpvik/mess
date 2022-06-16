@@ -1,22 +1,30 @@
 package configs
 
 import (
-	"net/http"
+	"flag"
+	"io/fs"
+	"os"
 
-	"github.com/sharpvik/log-go"
+	"github.com/sharpvik/log-go/v2"
 
 	"github.com/sharpvik/mess/env"
 )
 
 type Server struct {
-	PublicDir http.Dir
-	DevMode   bool
+	DistDir fs.FS
+	DevMode bool
 }
 
 func mustInitServer() Server {
 	log.Debug("config server")
 	return Server{
-		PublicDir: http.Dir(env.MustGet("CLIENT_DIR")),
-		DevMode:   parseFlags(),
+		DistDir: os.DirFS(env.MustGet("CLIENT_DIST_DIR")),
+		DevMode: parseFlags(),
 	}
+}
+
+func parseFlags() (dev bool) {
+	d := flag.Bool("dev", false, "run server in development mode")
+	flag.Parse()
+	return *d
 }
